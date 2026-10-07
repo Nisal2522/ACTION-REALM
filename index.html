@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Action Realm Collectibles</title>
+    <meta name="description" content="Sri Lanka's home for premium action figures, statues and pop-culture collectibles. Free island-wide delivery." />
+    <meta name="theme-color" content="#b90a1c" />
+
+    <!-- Share previews (WhatsApp, Facebook, X) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Action Realm Collectibles" />
+    <meta property="og:title" content="Action Realm Collectibles" />
+    <meta property="og:description" content="Premium action figures, statues and collectibles in Sri Lanka. Free island-wide delivery." />
+    <meta property="og:image" content="https://actionrealm.lk/logo-512.png" />
+    <meta name="twitter:card" content="summary" />
+
+    <link rel="icon" type="image/png" href="/logo-64.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Apply the saved light/dark theme before the page paints (avoids a flash). -->
+    <script>
+      try { document.documentElement.dataset.theme = localStorage.getItem('ar_theme') || 'light'; } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
