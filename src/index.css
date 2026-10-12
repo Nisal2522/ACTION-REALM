@@ -6,7 +6,7 @@
   --text: #111118;
   --muted: #6b6b7b;
   --accent: #b90a1c;
-  --accent-text: #b90a1c;
+  --accent-text: var(--accent);
   --accent-ink: #fff;
   --red: #ef4444;
   --sale: #ea580c;

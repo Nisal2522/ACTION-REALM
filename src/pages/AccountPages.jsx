@@ -1,25 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { SITE, formatPrice, isValidPhone } from '../config/site';
 import { useCollection } from '../services/db';
 import { useAuth } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
 import OrderView from '../components/OrderView';
-import { LogoutIcon } from '../components/Icons';
+import { EyeIcon, EyeOffIcon, LockIcon, LogoutIcon, MailIcon, PhoneIcon, UserIcon } from '../components/Icons';
 import useTitle from '../hooks/useTitle';
 
 export function Login() {
   const { login, register, user } = useAuth();
   const [params] = useSearchParams();
-  const nextUrl = params.get('next') || '/account';
+  // Admins go straight to the admin panel; customers to their account (unless a page asked to come back).
+  const destination = (u) => params.get('next') || (u?.role === 'admin' ? '/admin' : '/account');
   const navigate = useNavigate();
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+
+  // Lock the page: no scrolling, and the login area fills exactly the space under the header.
+  useEffect(() => {
+    const header = document.querySelector('.site-header');
+    const fit = () => document.documentElement.style.setProperty('--header-h', `${header?.offsetHeight || 0}px`);
+    fit();
+    const ro = header && 'ResizeObserver' in window ? new ResizeObserver(fit) : null;
+    ro?.observe(header);
+    document.body.classList.add('auth-lock');
+    return () => {
+      ro?.disconnect();
+      document.body.classList.remove('auth-lock');
+    };
+  }, []);
   useTitle(mode === 'login' ? 'Log In' : 'Create Account');
 
-  if (user) return <Navigate to={nextUrl} replace />;
+  if (user) return <Navigate to={destination(user)} replace />;
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -32,9 +48,8 @@ export function Login() {
     }
     setBusy(true);
     try {
-      if (mode === 'login') await login(form.email, form.password);
-      else await register(form);
-      navigate(nextUrl, { replace: true });
+      const loggedIn = mode === 'login' ? await login(form.email, form.password) : await register(form);
+      navigate(destination(loggedIn), { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -42,28 +57,62 @@ export function Login() {
     }
   };
 
+  const isLogin = mode === 'login';
+  const switchMode = (m) => { setMode(m); setError(''); };
+
   return (
-    <div className="container auth-page">
+    <div className="auth-page">
+      {/* Photo on the left that fades into the background; the form sits on the right */}
+      <div className="auth-visual" aria-hidden="true">
+        {SITE.login.image && <img src={SITE.login.image} alt="" />}
+      </div>
+
       <div className="auth-card">
-        <img src="/logo-256.png" alt="" className="auth-logo" />
-        <div className="tabs auth-tabs">
-          <button className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); }}>Log In</button>
-          <button className={mode === 'register' ? 'active' : ''} onClick={() => { setMode('register'); setError(''); }}>Register</button>
+        <div className="auth-head">
+          <h1>{isLogin ? SITE.login.loginTitle : SITE.login.registerTitle}</h1>
         </div>
-        <form className="stack" onSubmit={submit}>
-          {mode === 'register' && (
+
+        <div className={`auth-switch ${isLogin ? '' : 'right'}`} role="tablist">
+          <span className="auth-switch-pill" aria-hidden="true" />
+          <button type="button" role="tab" aria-selected={isLogin} onClick={() => switchMode('login')}>Log in</button>
+          <button type="button" role="tab" aria-selected={!isLogin} onClick={() => switchMode('register')}>Register</button>
+        </div>
+
+        <form className="auth-form" onSubmit={submit}>
+          {!isLogin && (
             <>
-              <input className="input" required placeholder="Full name" value={form.name} onChange={set('name')} autoComplete="name" />
-              <input className="input" required placeholder="Mobile number (07X XXX XXXX)" value={form.phone} onChange={set('phone')} autoComplete="tel" />
+              <label className="auth-field">
+                <UserIcon width={18} height={18} />
+                <input required placeholder="Full name" value={form.name} onChange={set('name')} autoComplete="name" />
+              </label>
+              <label className="auth-field">
+                <PhoneIcon width={18} height={18} />
+                <input required inputMode="tel" placeholder="Mobile number (07X XXX XXXX)" value={form.phone} onChange={set('phone')} autoComplete="tel" />
+              </label>
             </>
           )}
-          <input className="input" required type="email" placeholder="Email" value={form.email} onChange={set('email')} autoComplete="email" />
-          <input className="input" required type="password" placeholder="Password" value={form.password} onChange={set('password')} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
-          {error && <p className="error">{error}</p>}
-          <button className="btn btn-block btn-lg" disabled={busy}>{busy ? 'Please wait…' : mode === 'login' ? 'Log In' : 'Create Account'}</button>
+          <label className="auth-field">
+            <MailIcon width={18} height={18} />
+            <input required type="email" placeholder="Email address" value={form.email} onChange={set('email')} autoComplete="email" />
+          </label>
+          <label className="auth-field">
+            <LockIcon width={18} height={18} />
+            <input required type={showPw ? 'text' : 'password'} placeholder="Password" value={form.password} onChange={set('password')} autoComplete={isLogin ? 'current-password' : 'new-password'} />
+            <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)} aria-label={showPw ? 'Hide password' : 'Show password'}>
+              {showPw ? <EyeOffIcon width={18} height={18} /> : <EyeIcon width={18} height={18} />}
+            </button>
+          </label>
+          {error && <p className="auth-error" role="alert">{error}</p>}
+          <button className="auth-submit" disabled={busy}>
+            {busy ? 'Please wait…' : isLogin ? 'Log in' : 'Create account'}
+          </button>
         </form>
-        {mode === 'register' && <p className="muted small center">Members earn {SITE.coinsName} on every order and can track orders anytime.</p>}
-        <p className="muted small center demo-note">Demo admin: admin@actionrealm.lk / admin123</p>
+
+        <p className="auth-alt">
+          {isLogin ? "Don't have an account? " : 'Already a member? '}
+          <button type="button" onClick={() => switchMode(isLogin ? 'register' : 'login')}>{isLogin ? 'Create one' : 'Log in'}</button>
+        </p>
+        {SITE.login.showDemo && <p className="auth-demo">Demo admin: admin@actionrealm.lk / admin123</p>}
       </div>
     </div>
   );
@@ -79,6 +128,7 @@ export function Account() {
   useTitle('My Account');
 
   if (!user) return <Navigate to="/login?next=/account" replace />;
+  if (isAdmin) return <Navigate to="/admin" replace />; // admins manage everything from the admin panel
 
   const mine = orders.filter((o) => o.userId === user.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 

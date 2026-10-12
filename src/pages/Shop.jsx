@@ -23,6 +23,7 @@ const AVAILABILITY = {
   instock: { label: 'In Stock', fn: isAvailableNow },
   preorder: { label: 'Pre-Order', fn: (p) => p.status === 'preorder' },
   soldout: { label: 'Sold Out', fn: isSoldOut },
+  new: { label: 'New Arrivals', fn: (p) => p.isNew },
 };
 
 // Filters live in the URL (?brand=NECA,Funko&cat=Statues&avail=instock&max=5000&sort=price-asc)
@@ -94,7 +95,6 @@ export default function Shop() {
 
   return (
     <div className="container shop">
-      <nav className="crumbs"><Link to="/">Home</Link> / <span>{collection.title}</span></nav>
       <div className="shop-head">
         <h1>{q ? `Search: “${qRaw}”` : collection.title}</h1>
         <p className="muted">{results.length} products</p>

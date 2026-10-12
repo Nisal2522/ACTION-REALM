@@ -1,27 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SITE, formatPrice } from '../config/site';
-import { getBrands, isAvailableNow, isOnSale, isPreorder, unsplash, useProducts } from '../data/products';
+import { SITE } from '../config/site';
+import { getBrands, isAvailableNow, isOnSale, isPreorder, useProducts } from '../data/products';
 import { collectionUrl } from '../data/collections';
-import { CHARACTERS, FAQS, HERO_SLIDES, MARQUEE_BRANDS, TESTIMONIALS } from '../data/content';
+import { useContent } from '../data/content';
 import { useStore } from '../context/StoreContext';
 import ProductCard from './ProductCard';
 import ProductImage from './ProductImage';
 import { SaleCountdown } from './ui';
-import { CardIcon, ChevronIcon, ShieldIcon, StoreIcon, TruckIcon } from './Icons';
+import { CardIcon, ChevronIcon, ClockIcon, HeartIcon, ShieldIcon, StoreIcon, TagIcon, TruckIcon } from './Icons';
+
+// Unsplash images can be resized by changing their `w` parameter.
+const sized = (url, w) => (url && url.includes('images.unsplash.com') ? url.replace(/([?&])w=\d+/, `$1w=${w}`) : url);
 
 export function HeroCarousel() {
+  const slides = useContent('heroSlides').filter((s) => s.enabled !== false);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef(null);
-  const n = HERO_SLIDES.length;
+  const n = slides.length;
   const go = (d) => setI((x) => (x + d + n) % n);
+  const current = n ? i % n : 0;
 
   useEffect(() => {
-    if (paused) return undefined;
+    if (paused || n < 2) return undefined;
     const t = setInterval(() => setI((x) => (x + 1) % n), 6000);
     return () => clearInterval(t);
   }, [i, n, paused]);
+
+  if (!n) return null;
 
   const onTouchStart = (e) => {
     touchX.current = e.touches[0].clientX;
@@ -45,44 +52,51 @@ export function HeroCarousel() {
       onTouchEnd={onTouchEnd}
       aria-roledescription="carousel"
     >
-      {HERO_SLIDES.map((s, idx) => {
-        const fade = `linear-gradient(90deg, ${s.colors[1]}ee 0%, ${s.colors[1]}99 45%, transparent 80%)`;
-        const fadeMobile = `linear-gradient(0deg, ${s.colors[1]}f2 0%, ${s.colors[1]}aa 45%, ${s.colors[1]}33 100%)`;
+      {slides.map((s, idx) => {
+        const base = s.baseColor || '#111111';
+        const fade = `linear-gradient(90deg, ${base}ee 0%, ${base}99 45%, transparent 80%)`;
+        const fadeMobile = `linear-gradient(0deg, ${base}f2 0%, ${base}aa 45%, ${base}33 100%)`;
         return (
           <div
-            key={s.title}
-            className={`hero-slide ${idx === i ? 'active' : ''}`}
+            key={s.id}
+            className={`hero-slide ${idx === current ? 'active' : ''}`}
             style={{
-              '--hero-desktop': s.image ? `${fade}, url(${unsplash(s.image, 1920)}) center / cover` : 'none',
-              '--hero-mobile': s.image ? `${fadeMobile}, url(${unsplash(s.image, 900)}) center / cover` : 'none',
-              '--hero-color': s.colors[1],
-              '--hero-glow': s.colors[0],
+              '--hero-desktop': s.image ? `${fade}, url("${sized(s.image, 1920)}") center / cover` : 'none',
+              '--hero-mobile': s.image ? `${fadeMobile}, url("${sized(s.image, 900)}") center / cover` : 'none',
+              '--hero-color': base,
+              '--hero-glow': s.glowColor || SITE.accentColor,
             }}
-            aria-hidden={idx !== i}
+            aria-hidden={idx !== current}
           >
             <div className="container hero-content">
-              <span className="eyebrow">{s.eyebrow}</span>
+              {s.eyebrow && <span className="eyebrow">{s.eyebrow}</span>}
               <h1>{s.title}</h1>
-              <p>{s.text}</p>
-              <Link to={s.to} className="btn btn-lg" tabIndex={idx === i ? 0 : -1}>{s.cta}</Link>
+              {s.text && <p>{s.text}</p>}
+              {s.cta && <Link to={s.link || '/'} className="btn btn-lg" tabIndex={idx === current ? 0 : -1}>{s.cta}</Link>}
             </div>
           </div>
         );
       })}
-      <button className="hero-arrow left" onClick={() => go(-1)} aria-label="Previous slide"><ChevronIcon dir="left" /></button>
-      <button className="hero-arrow right" onClick={() => go(1)} aria-label="Next slide"><ChevronIcon dir="right" /></button>
-      <div className="hero-dots">
-        {HERO_SLIDES.map((s, idx) => (
-          <button key={s.title} className={idx === i ? 'active' : ''} onClick={() => setI(idx)} aria-label={`Slide ${idx + 1}`} />
-        ))}
-      </div>
+      {n > 1 && (
+        <>
+          <button className="hero-arrow left" onClick={() => go(-1)} aria-label="Previous slide"><ChevronIcon dir="left" /></button>
+          <button className="hero-arrow right" onClick={() => go(1)} aria-label="Next slide"><ChevronIcon dir="right" /></button>
+          <div className="hero-dots">
+            {slides.map((s, idx) => (
+              <button key={s.id} className={idx === current ? 'active' : ''} onClick={() => setI(idx)} aria-label={`Slide ${idx + 1}`} />
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 }
 
 export function BrandMarquee() {
+  const strip = useContent('brandStrip');
   const brands = getBrands(useProducts());
-  const list = [...MARQUEE_BRANDS, ...MARQUEE_BRANDS];
+  if (!strip.length) return null;
+  const list = [...strip, ...strip];
   return (
     <section className="marquee" aria-label="Brands we carry">
       <div className="marquee-track">
@@ -97,7 +111,7 @@ export function BrandMarquee() {
               {b.name}
             </>
           );
-          const duplicate = idx >= MARQUEE_BRANDS.length; // second copy exists only for the seamless loop
+          const duplicate = idx >= strip.length; // second copy exists only for the seamless loop
           return brands.includes(b.name) ? (
             <Link key={idx} to={collectionUrl(b.name)} className="marquee-item" aria-hidden={duplicate} tabIndex={duplicate ? -1 : 0}>{content}</Link>
           ) : (
@@ -110,7 +124,7 @@ export function BrandMarquee() {
 }
 
 const TABS = [
-  { label: 'In Stock Now', slug: 'in-stock', filter: isAvailableNow },
+  { label: 'In Stock', slug: 'in-stock', filter: isAvailableNow },
   { label: 'Pre-Orders', slug: 'pre-orders', filter: isPreorder },
   { label: 'New Arrivals', slug: 'new-arrivals', filter: (p) => p.isNew },
   { label: 'On Sale', slug: 'sale', filter: isOnSale },
@@ -119,7 +133,7 @@ const TABS = [
 export function ProductTabs() {
   const products = useProducts();
   const [tab, setTab] = useState(0);
-  const items = products.filter(TABS[tab].filter).slice(0, 14);
+  const items = products.filter(TABS[tab].filter).slice(0, SITE.homeTabCount || 14);
   return (
     <section className="section container">
       <div className="tabs" role="tablist">
@@ -157,7 +171,12 @@ export function RecentlyViewed({ excludeId }) {
     .map((id) => products.find((p) => p.id === id))
     .filter(Boolean)
     .slice(0, 8);
-  return <ProductRail title="Recently Viewed" products={list} />;
+  if (!list.length) return null;
+  if (list.length < 4) {
+    const extra = products.filter((p) => p.id !== excludeId && !list.includes(p)).sort((a, b) => Number(b.featured) - Number(a.featured));
+    list.push(...extra.slice(0, 4 - list.length));
+  }
+  return <ProductRail title={SITE.homeTitles.recent} products={list} />;
 }
 
 export function CollectionGrid({ title, names }) {
@@ -181,13 +200,15 @@ export function CollectionGrid({ title, names }) {
 }
 
 export function CharacterGrid() {
+  const characters = useContent('characters');
+  if (!characters.length) return null;
   return (
     <section className="section container">
-      <div className="section-head"><h2>Shop By Character</h2></div>
+      <div className="section-head"><h2>{SITE.homeTitles.characters}</h2></div>
       <div className="character-grid">
-        {CHARACTERS.map((c) => (
-          <Link key={c.name} to={`/collections/all?q=${encodeURIComponent(c.query)}`} className="character">
-            <span className="character-img"><img src={unsplash(c.image, 300)} alt="" loading="lazy" /></span>
+        {characters.map((c) => (
+          <Link key={c.id} to={`/collections/all?q=${encodeURIComponent(c.query || c.name)}`} className="character">
+            <span className="character-img">{c.image && <img src={c.image} alt="" loading="lazy" />}</span>
             <span>{c.name}</span>
           </Link>
         ))}
@@ -196,38 +217,44 @@ export function CharacterGrid() {
   );
 }
 
+export const PERK_ICONS = { truck: TruckIcon, shield: ShieldIcon, card: CardIcon, store: StoreIcon, tag: TagIcon, clock: ClockIcon, heart: HeartIcon };
+
 export function Perks() {
-  const perks = [
-    { Icon: TruckIcon, title: 'Free Island-wide Delivery', text: 'Insured delivery to all 25 districts' },
-    { Icon: ShieldIcon, title: '100% Authentic', text: 'Officially licensed products' },
-    { Icon: CardIcon, title: '0% Installments', text: `On orders above ${formatPrice(SITE.installmentThreshold)}` },
-    { Icon: StoreIcon, title: 'Visit Our Stores', text: SITE.stores.map((s) => s.city).join(' & ') },
-  ];
+  const perks = useContent('perks');
+  if (!perks.length) return null;
   return (
     <section className="perks container">
-      {perks.map(({ Icon, title, text }) => (
-        <div className="perk" key={title}>
-          <Icon width={30} height={30} />
-          <div><strong>{title}</strong><p className="muted small">{text}</p></div>
-        </div>
-      ))}
+      {perks.map((p) => {
+        const Icon = PERK_ICONS[p.icon] || TruckIcon;
+        return (
+          <div className="perk" key={p.id}>
+            <Icon width={30} height={30} />
+            <div><strong>{p.title}</strong><p className="muted small">{p.text}</p></div>
+          </div>
+        );
+      })}
     </section>
   );
 }
 
 export function Testimonials() {
+  const list = useContent('testimonials');
+  if (!list.length) return null;
   return (
     <section className="section testimonials">
       <div className="container">
-        <div className="section-head"><h2>What Collectors Say</h2></div>
+        <div className="section-head"><h2>{SITE.homeTitles.testimonials}</h2></div>
         <div className="rail">
-          {TESTIMONIALS.map((t) => (
-            <figure className="quote" key={t.name}>
-              <div className="stars" aria-label="5 stars">★★★★★</div>
-              <blockquote>“{t.text}”</blockquote>
-              <figcaption><strong>{t.name}</strong> · {t.city}</figcaption>
-            </figure>
-          ))}
+          {list.map((t) => {
+            const rating = Number(t.rating) || 5;
+            return (
+              <figure className="quote" key={t.id}>
+                <div className="stars" aria-label={`${rating} stars`}>{'★'.repeat(rating)}<span className="stars-off">{'★'.repeat(5 - rating)}</span></div>
+                <blockquote>“{t.text}”</blockquote>
+                <figcaption><strong>{t.name}</strong>{t.city && ` · ${t.city}`}</figcaption>
+              </figure>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -235,11 +262,13 @@ export function Testimonials() {
 }
 
 export function Faq() {
+  const faqs = useContent('faqs');
+  if (!faqs.length) return null;
   return (
     <section className="section container faq">
-      <div className="section-head"><h2>Frequently Asked Questions</h2></div>
-      {FAQS.map((f) => (
-        <details key={f.q}>
+      <div className="section-head"><h2>{SITE.homeTitles.faq}</h2></div>
+      {faqs.map((f) => (
+        <details key={f.id}>
           <summary>{f.q}</summary>
           <p>{f.a}</p>
         </details>

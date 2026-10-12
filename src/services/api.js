@@ -1,5 +1,5 @@
 // Store operations built on top of the demo backend (services/db.js).
-import { SITE } from '../config/site';
+import { SITE, deliveryFor } from '../config/site';
 import { db, useCollection } from './db';
 import { getProduct, isPreorder } from '../data/products';
 
@@ -22,12 +22,13 @@ export function priceOrder(cartItems, { couponCode = '', coinsToUse = 0 } = {}) 
   const couponResult = couponCode ? checkCoupon(couponCode, subtotal) : null;
   const discount = couponResult?.discount || 0;
   const coinsDiscount = Math.min(coinsToUse * SITE.coinValue, Math.max(0, subtotal - discount));
-  const total = Math.max(0, subtotal - discount - coinsDiscount);
+  const shipping = deliveryFor(subtotal);
+  const total = Math.max(0, subtotal - discount - coinsDiscount) + shipping;
 
   // Pre-order items: only the deposit is due now. Discounts come off the amount due now first.
   const preorderValue = cartItems.filter((i) => isPreorder(i.product)).reduce((s, i) => s + i.product.price * i.qty, 0);
   const payLaterRaw = Math.round(preorderValue * (1 - SITE.depositRate));
-  const payLater = Math.min(payLaterRaw, total);
+  const payLater = Math.min(payLaterRaw, total - shipping); // delivery is always paid now
   const payNow = total - payLater;
 
   return {
@@ -37,11 +38,12 @@ export function priceOrder(cartItems, { couponCode = '', coinsToUse = 0 } = {}) 
     coupon: couponResult?.coupon || null,
     coinsUsed: Math.ceil(coinsDiscount / SITE.coinValue),
     coinsDiscount,
+    shipping,
     total,
     payNow,
     payLater,
     hasPreorder: preorderValue > 0,
-    coinsEarned: Math.floor(total * SITE.coinsRate),
+    coinsEarned: Math.floor((total - shipping) * SITE.coinsRate),
   };
 }
 

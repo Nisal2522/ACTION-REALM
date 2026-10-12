@@ -33,6 +33,7 @@ export default function OrderView({ order }) {
         <div>
           <h3>Order #{order.id}</h3>
           <p className="muted small">Placed {fmtDate(order.createdAt)} · Payment: {order.payment.status}</p>
+          {order.trackingNumber && <p className="small">Courier tracking: <strong>{order.trackingNumber}</strong></p>}
         </div>
         <span className={`status-pill s-${order.status.toLowerCase()}`}>{order.status}</span>
       </div>
@@ -53,6 +54,7 @@ export default function OrderView({ order }) {
         <div className="row-between"><span>Subtotal</span><span>{formatPrice(order.subtotal)}</span></div>
         {order.discount > 0 && <div className="row-between discount"><span>Coupon {order.couponCode}</span><span>−{formatPrice(order.discount)}</span></div>}
         {order.coinsDiscount > 0 && <div className="row-between discount"><span>{SITE.coinsName}</span><span>−{formatPrice(order.coinsDiscount)}</span></div>}
+        <div className="row-between"><span>Delivery</span><span>{order.shipping ? formatPrice(order.shipping) : 'Free'}</span></div>
         <div className="row-between total"><span>Total</span><strong>{formatPrice(order.total)}</strong></div>
         {order.payLater > 0 && <div className="row-between"><span className="muted">Balance due when pre-orders arrive</span><span>{formatPrice(order.payLater)}</span></div>}
       </div>

@@ -26,7 +26,7 @@
 
     <!-- Apply the saved light/dark theme before the page paints (avoids a flash). -->
     <script>
-      try { document.documentElement.dataset.theme = localStorage.getItem('ar_theme') || 'light'; } catch (e) {}
+      try { document.documentElement.dataset.theme = localStorage.getItem('ar_mode') || 'dark'; } catch (e) {}
     </script>
   </head>
   <body>

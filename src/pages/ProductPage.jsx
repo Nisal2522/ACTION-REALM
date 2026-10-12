@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { SITE, formatPrice } from '../config/site';
-import { getProductBySlug, isOnSale, isPreorder, isSoldOut, useProducts } from '../data/products';
+import { SITE, deliveryText, formatPrice } from '../config/site';
+import { getProductBySlug, isOnSale, isPreorder, isSoldOut, productPhotos, useProducts } from '../data/products';
 import { collectionUrl } from '../data/collections';
 import { ratingFor, useReviews } from '../services/api';
 import { track } from '../services/analytics';
@@ -21,6 +21,7 @@ export default function ProductPage() {
   const { addToCart, toggleWishlist, isWishlisted, openNotify, markViewed } = useStore();
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
+  const [photo, setPhoto] = useState(0);
   const [showSticky, setShowSticky] = useState(false);
   const buyRef = useRef(null);
 
@@ -28,6 +29,7 @@ export default function ProductPage() {
 
   useEffect(() => {
     setQty(1);
+    setPhoto(0);
     if (!product) return;
     markViewed(product.id);
     track('view_item', { value: product.price, items: [product] });
@@ -52,16 +54,23 @@ export default function ProductPage() {
   const coins = Math.floor(product.price * SITE.coinsRate);
   const deposit = Math.round(product.price * SITE.depositRate);
   const mainLabel = preorder ? 'Pre-Order Now' : 'Add To Cart';
+  const photos = productPhotos(product);
 
   return (
     <>
       <div className="container">
-        <nav className="crumbs">
-          <Link to="/">Home</Link> / <Link to={collectionUrl(product.category)}>{product.category}</Link> / <span>{product.name}</span>
-        </nav>
         <div className="pdp">
-          <div className="gallery">
-            <ZoomImage product={product} />
+          <div className={`gallery ${photos.length > 1 ? 'has-thumbs' : ''}`}>
+            <ZoomImage product={{ ...product, image: photos[Math.min(photo, photos.length - 1)] || product.image }} />
+            {photos.length > 1 && (
+              <div className="thumbs">
+                {photos.map((src, i) => (
+                  <button key={`${i}-${src.length}`} className={i === photo ? 'active' : ''} onClick={() => setPhoto(i)} aria-label={`Photo ${i + 1}`}>
+                    <img src={src} alt="" loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="pdp-info">
@@ -73,7 +82,7 @@ export default function ProductPage() {
               {sale && <span className="compare">{formatPrice(product.compareAt)}</span>}
               {sale && <span className="badge badge-sale">Save {formatPrice(product.compareAt - product.price)}</span>}
             </div>
-            <p className="muted small">Inclusive of all taxes · Free island-wide delivery</p>
+            <p className="muted small">Inclusive of all taxes · {deliveryText()}</p>
             {sale && <SaleCountdown />}
 
             {soldOut ? (
@@ -128,7 +137,7 @@ export default function ProductPage() {
             )}
 
             <div className="trust">
-              <span><TruckIcon width={18} height={18} /> Free insured delivery</span>
+              <span><TruckIcon width={18} height={18} /> {SITE.deliveryFee ? 'Insured island-wide delivery' : 'Free insured delivery'}</span>
               <span><ShieldIcon width={18} height={18} /> 100% authentic</span>
             </div>
 
@@ -147,7 +156,7 @@ export default function ProductPage() {
             </details>
             <details>
               <summary>Delivery & Returns</summary>
-              <p>Free island-wide delivery. Colombo 1–2 days, other districts 2–4 days. Orders are double-boxed and insured. Report any transit damage within 48 hours with an unboxing video for a replacement or refund.</p>
+              <p>{deliveryText()}. Colombo {SITE.deliveryDays.colombo} days, other districts {SITE.deliveryDays.other} days. Orders are double-boxed and insured. Report any transit damage within 48 hours with an unboxing video for a replacement or refund.</p>
             </details>
           </div>
         </div>

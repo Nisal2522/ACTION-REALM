@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
 
-// Light by default; the choice is remembered per browser.
+// Dark mode by default; a visitor's own choice (moon/sun button) is remembered per browser.
+const KEY = 'ar_mode';
 export default function useTheme() {
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem('ar_theme') || 'light';
+      return localStorage.getItem(KEY) || 'dark';
     } catch {
-      return 'light';
+      return 'dark';
     }
   });
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     try {
-      localStorage.setItem('ar_theme', theme);
+      localStorage.setItem(KEY, theme);
     } catch {
       /* storage unavailable */
     }

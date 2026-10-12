@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { SITE } from '../config/site';
 
-const BASE = `${SITE.name.replace(/\b\w+/g, (w) => w[0] + w.slice(1).toLowerCase())} ${SITE.tagline}`;
+const siteTitle = () => `${SITE.name.replace(/\b\w+/g, (w) => w[0] + w.slice(1).toLowerCase())}${SITE.slogan ? ` — ${SITE.slogan}` : ''}`;
 
 function setMeta(attr, key, content) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -18,7 +18,8 @@ function setMeta(attr, key, content) {
 // previews in production, pre-render pages (e.g. vite-plugin-ssr / a host with prerendering).
 export default function useTitle(title, { description, image } = {}) {
   useEffect(() => {
-    const full = title ? `${title} | ${BASE}` : BASE;
+    const base = siteTitle();
+    const full = title ? `${title} | ${base}` : base;
     document.title = full;
     setMeta('name', 'description', description || SITE.description);
     setMeta('property', 'og:title', full);

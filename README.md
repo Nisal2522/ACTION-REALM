@@ -23,14 +23,29 @@ All data (products, orders, customers, reviews, coupons, messages) is stored in 
 
 ## Where to change things
 
+Almost everything is managed in the **Admin panel** (`/admin`):
+
+| Admin section | What it controls on the website |
+| --- | --- |
+| Dashboard | Sales overview, best sellers, low stock, latest orders |
+| Orders | Order status, payment status, courier tracking number, private notes, WhatsApp updates, Excel export |
+| Discounts | Discount codes (% or Rs.), minimum order, on/off, times used |
+| Products | Add / edit / delete, multiple photos, prices, sale prices, stock, pre-orders, Featured & New tags |
+| Reviews | Delete reviews, mark as verified |
+| Income | Record income: method (list or custom), description, date, amount, shipment no, order no — search, filter, Excel export |
+| Expenses | Same fields for money going out (stock, shipping, customs, rent…) |
+| Bank & Profit | Debit (expenses) and credit (income + pre-order payments) by date or shipment, running balance, profit/loss dashboard, monthly chart, filters, Excel statement |
+| **Pages** | Every page: Home (banner, sections, headings, brands, characters, perks, testimonials, FAQ), About Us, Contact Us, Login, and information pages (shipping, returns, privacy, terms, new pages) |
+
+Code files (only needed for developers):
+
 | What | File |
 | --- | --- |
-| Store name, phone, WhatsApp, stores, bank details, deposit %, sale end date, coins | `src/config/site.js` |
-| Products | Admin panel (`/admin` → Products), or the sample list in `src/data/products.js` |
-| Coupons, reviews, orders, customers | Admin panel |
-| Hero slides, brand strip, characters, Instagram photos, FAQ, testimonials, policy pages | `src/data/content.js` |
-| Starting data (admin user, sample coupons and reviews) | `src/data/seeds.js` |
-| Colours (light and dark mode) | top of `src/index.css` |
+| Default settings (used before anything is saved in admin) | `src/config/site.js` |
+| Sample products | `src/data/products.js` |
+| Sample homepage content and pages | `src/data/content.js` |
+| Admin account, sample coupons and reviews | `src/data/seeds.js` |
+| Colours for light and dark mode | top of `src/index.css` |
 
 ## Features
 

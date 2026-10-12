@@ -1,4 +1,7 @@
 import './data/seeds'; // register demo-backend starting data before anything reads it
+import './data/content';
+import { loadSettings } from './services/settings';
+import { ensureSampleData } from './data/sampleData';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -8,7 +11,10 @@ import { StoreProvider } from './context/StoreContext';
 import { initAnalytics } from './services/analytics';
 import './index.css';
 import './features.css';
+import './admin/admin.css'; // last, so admin styles override shared ones
 
+loadSettings();
+ensureSampleData(); // demo orders, customers and inbox items (first run only)
 initAnalytics();
 
 ReactDOM.createRoot(document.getElementById('root')).render(

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { DISTRICTS, SITE, formatPrice, isValidPhone } from '../config/site';
+import { DISTRICTS, SITE, deliveryDaysFor, formatPrice, isValidPhone } from '../config/site';
 import { createOrder, nextOrderId, priceOrder } from '../services/api';
 import { isPayHereLive, payWithPayHere } from '../services/payhere';
 import { track } from '../services/analytics';
@@ -24,7 +24,7 @@ export default function Checkout() {
   const [step, setStep] = useState(0);
   const [contact, setContact] = useState({ name: user?.name || '', email: user?.email || '', phone: user?.phone || '' });
   const [address, setAddress] = useState(saved || { line: '', city: '', district: '', postal: '' });
-  const [payment, setPayment] = useState('card');
+  const [payment, setPayment] = useState(() => ['card', 'bank', 'cod'].find((m) => SITE.payments[m]) || 'bank');
   const [useCoins, setUseCoins] = useState(false);
   const [errors, setErrors] = useState({});
   const [paying, setPaying] = useState(false);
@@ -109,7 +109,7 @@ export default function Checkout() {
     { id: 'card', title: 'Credit / Debit Card', text: 'Visa, Mastercard, Amex · Secured by PayHere' },
     { id: 'bank', title: 'Bank Transfer', text: 'Transfer and send us the slip on WhatsApp' },
     { id: 'cod', title: 'Cash on Delivery', text: hasPreorder ? 'Not available for pre-orders' : 'Pay when your order arrives', disabled: hasPreorder },
-  ];
+  ].filter((o) => SITE.payments[o.id]);
 
   return (
     <div className="container checkout">
@@ -173,7 +173,7 @@ export default function Checkout() {
               </Field>
             </div>
             {address.district && (
-              <p className="notice notice-ok">Free delivery to {address.district} · Estimated {address.district === 'Colombo' || address.district === 'Gampaha' ? '1–2' : '2–4'} business days</p>
+              <p className="notice notice-ok">{pricing.shipping ? `Delivery ${formatPrice(pricing.shipping)}` : 'Delivery'} to {address.district} · Estimated {deliveryDaysFor(address.district)} business days</p>
             )}
             <button className="btn btn-lg btn-block">Continue to Payment</button>
           </form>
@@ -239,7 +239,7 @@ export default function Checkout() {
         <div className="row-between"><span>Subtotal</span><span>{formatPrice(pricing.subtotal)}</span></div>
         {pricing.discount > 0 && <div className="row-between discount"><span>Coupon {pricing.coupon?.code}</span><span>−{formatPrice(pricing.discount)}</span></div>}
         {pricing.coinsDiscount > 0 && <div className="row-between discount"><span>{SITE.coinsName}</span><span>−{formatPrice(pricing.coinsDiscount)}</span></div>}
-        <div className="row-between"><span>Delivery</span><span className="free">FREE</span></div>
+        <div className="row-between"><span>Delivery</span>{pricing.shipping ? <span>{formatPrice(pricing.shipping)}</span> : <span className="free">FREE</span>}</div>
         <div className="row-between total"><span>Total</span><strong>{formatPrice(pricing.total)}</strong></div>
         {hasPreorder && (
           <>
@@ -256,7 +256,7 @@ export default function Checkout() {
           <h3>Demo card payment</h3>
           <p className="muted">Amount: <strong>{formatPrice(pricing.payNow)}</strong></p>
           <p className="muted small">This is a simulation. Connect PayHere in src/config/site.js to take real payments.</p>
-          <button className="btn btn-block" onClick={() => { setSimulating(false); finish('Paid (demo)'); }}>Simulate Successful Payment</button>
+          <button className="btn btn-block" onClick={() => { setSimulating(false); finish('Paid'); }}>Simulate Successful Payment</button>
           <button className="btn btn-outline btn-block" onClick={() => { setSimulating(false); setPayError('Payment failed (simulated). Try again or choose another method.'); }}>Simulate Failed Payment</button>
         </div>
       </Modal>

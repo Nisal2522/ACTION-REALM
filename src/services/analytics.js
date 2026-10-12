@@ -1,7 +1,6 @@
 // Google Analytics 4 + Meta Pixel. Does nothing until IDs are set in SITE.analytics.
 import { SITE } from '../config/site';
 
-const { gaId, metaPixelId } = SITE.analytics;
 let started = false;
 
 function addScript(src) {
@@ -14,6 +13,7 @@ function addScript(src) {
 export function initAnalytics() {
   if (started || typeof window === 'undefined') return;
   started = true;
+  const { gaId, metaPixelId } = SITE.analytics; // set in Admin → Settings → Integrations (reload to apply)
 
   if (gaId) {
     addScript(`https://www.googletagmanager.com/gtag/js?id=${gaId}`);

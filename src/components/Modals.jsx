@@ -116,8 +116,8 @@ export function NewsletterPopup() {
     } catch {
       seen = true;
     }
-    if (seen) return undefined;
-    const t = setTimeout(() => setOpen(true), 12000);
+    if (seen || !SITE.popup.enabled) return undefined;
+    const t = setTimeout(() => setOpen(true), (Number(SITE.popup.delaySeconds) || 12) * 1000);
     return () => clearTimeout(t);
   }, []);
 
@@ -138,23 +138,27 @@ export function NewsletterPopup() {
 
   return (
     <Modal open={open} onClose={close} title="Newsletter" className="newsletter-modal">
-      <div className="nl-art"><img src="/logo-256.png" alt="" /></div>
+      <div className="nl-art"><img src={SITE.logo} alt="" /></div>
       <div className="nl-body">
         {done ? (
           <>
             <h2>Welcome to the Realm!</h2>
-            <p>Use this code at checkout for 10% off your first order:</p>
-            <div className="code-box">WELCOME10</div>
+            {SITE.popup.code ? (
+              <>
+                <p>Use this code at checkout:</p>
+                <div className="code-box">{SITE.popup.code}</div>
+              </>
+            ) : <p>You're subscribed. Watch your inbox for new drops and deals.</p>}
             <button className="btn btn-block" onClick={close}>Start Shopping</button>
           </>
         ) : (
           <>
             <span className="eyebrow dark">Exclusive offer</span>
-            <h2>Get 10% Off Your First Order</h2>
-            <p className="muted">Join for new drops, pre-order alerts and members-only deals.</p>
+            <h2>{SITE.popup.title}</h2>
+            <p className="muted">{SITE.popup.text}</p>
             <form onSubmit={submit} className="stack">
               <input className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email address" />
-              <button className="btn btn-block">Get My Code</button>
+              <button className="btn btn-block">{SITE.popup.code ? 'Get My Code' : 'Subscribe'}</button>
             </form>
             <button className="link-btn" onClick={close}>No thanks</button>
           </>

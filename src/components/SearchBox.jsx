@@ -15,6 +15,13 @@ export default function SearchBox() {
   const [active, setActive] = useState(-1);
   const navigate = useNavigate();
   const boxRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Start with the search box selected so visitors can type straight away.
+  // Desktop only: on phones this would pop the keyboard open over the page.
+  useEffect(() => {
+    if (window.matchMedia('(min-width: 861px)').matches) inputRef.current?.focus({ preventScroll: true });
+  }, []);
 
   const query = q.trim().toLowerCase();
   const results = query.length >= 2 ? products.filter((p) => matches(p, query)).slice(0, 6) : [];
@@ -63,6 +70,7 @@ export default function SearchBox() {
   return (
     <form className="search" onSubmit={submit} ref={boxRef} role="search">
       <input
+        ref={inputRef}
         id="site-search"
         type="search"
         value={q}
@@ -71,7 +79,7 @@ export default function SearchBox() {
           setQ(e.target.value);
           setOpen(true);
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => q && setOpen(true)}
         onKeyDown={onKeyDown}
         placeholder="Search figures, statues, brands…"
         aria-label="Search"

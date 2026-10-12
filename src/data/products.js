@@ -1,8 +1,9 @@
-import { slugify } from '../config/site';
+import { SITE, slugify } from '../config/site';
 import { db, registerSeed, useCollection } from '../services/db';
 
-export const CATEGORIES = ['Action Figures', 'Statues', '1/6 Scale Figures', 'Replicas', 'Funko Pop', 'Diecast'];
-export const FRANCHISES = ['Marvel', 'DC', 'Anime', 'Gaming', 'Horror', 'Sci-Fi'];
+// Category and franchise lists are edited in Admin → Settings → Catalogue.
+export const getCategories = () => SITE.categories;
+export const getFranchises = () => SITE.franchises;
 
 // Colours used to render placeholder artwork for products without a photo.
 export const PALETTE = {
@@ -117,6 +118,21 @@ export const getProductBySlug = (slug) => getProducts().find((x) => x.slug === s
 export const getBrands = (list = getProducts()) => [...new Set(list.map((x) => x.brand))].sort();
 
 export const isOnSale = (x) => Boolean(x.compareAt && x.compareAt > x.price);
+
+const DEMO_GALLERY_SIZE = 12;
+const POOL = Object.values(PHOTOS);
+export function productPhotos(product) {
+  if (product.images?.length) return product.images;
+  if (!product.image) return [];
+  if (!product.image.includes('images.unsplash.com')) return [product.image]; // admin-uploaded single photo
+  const start = (Number(product.id) || 0) % POOL.length;
+  const extra = [];
+  for (let i = 1; extra.length < DEMO_GALLERY_SIZE - 1 && i < POOL.length; i += 1) {
+    const src = unsplash(POOL[(start + i * 7) % POOL.length]);
+    if (src !== product.image && !extra.includes(src)) extra.push(src);
+  }
+  return [product.image, ...extra];
+}
 export const isSoldOut = (x) => x.status === 'instock' && x.stock <= 0;
 export const isAvailableNow = (x) => x.status === 'instock' && x.stock > 0;
 export const isPreorder = (x) => x.status === 'preorder';

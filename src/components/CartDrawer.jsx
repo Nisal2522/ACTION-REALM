@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { SITE, formatPrice } from '../config/site';
+import { SITE, deliveryText, formatPrice } from '../config/site';
 import { isAvailableNow, useProducts } from '../data/products';
 import { priceOrder } from '../services/api';
 import { track } from '../services/analytics';
@@ -88,11 +88,12 @@ export default function CartDrawer() {
               <CouponBox subtotal={pricing.subtotal} />
               <div className="row-between"><span>Subtotal</span><span>{formatPrice(pricing.subtotal)}</span></div>
               {pricing.discount > 0 && <div className="row-between discount"><span>Discount</span><span>−{formatPrice(pricing.discount)}</span></div>}
+              <div className="row-between"><span>Delivery</span>{pricing.shipping ? <span>{formatPrice(pricing.shipping)}</span> : <span className="free">FREE</span>}</div>
               <div className="row-between total"><span>Total</span><strong>{formatPrice(pricing.total)}</strong></div>
               {pricing.hasPreorder && (
                 <p className="muted small">Due now: <strong>{formatPrice(pricing.payNow)}</strong> · Balance on arrival: {formatPrice(pricing.payLater)}</p>
               )}
-              <p className="muted small">Free island-wide delivery · Earn {pricing.coinsEarned} {SITE.coinsName}</p>
+              <p className="muted small">{deliveryText()} · Earn {pricing.coinsEarned} {SITE.coinsName}</p>
               <button className="btn btn-block" onClick={checkout}>Checkout</button>
             </div>
           </>
