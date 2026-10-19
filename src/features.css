@@ -1225,3 +1225,98 @@ body.auth-lock { overflow: hidden; }
   .nav-drop-toggle { padding: 0 16px; }
   .nav-drop.expanded .nav-drop-toggle svg { transform: rotate(180deg); }
 }
+
+/* ───────────── Two-tier header: glass nav band under the logo row ───────────── */
+:root {
+  --nav-band: linear-gradient(180deg, rgba(17, 17, 24, .035), rgba(17, 17, 24, .012));
+  --nav-sep: rgba(17, 17, 24, .09);
+  --nav-hi: rgba(255, 255, 255, .7);
+  --nav-text: #3a3a48;
+  --nav-menu: rgba(255, 255, 255, .82);
+  --nav-hover: rgba(17, 17, 24, .05);
+  --nav-glow: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+:root[data-theme='dark'] {
+  --nav-band: linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .015));
+  --nav-sep: rgba(255, 255, 255, .08);
+  --nav-hi: rgba(255, 255, 255, .04);
+  --nav-text: #c4c4d0;
+  --nav-menu: rgba(22, 22, 30, .76);
+  --nav-hover: rgba(255, 255, 255, .06);
+  --nav-glow: color-mix(in srgb, var(--accent-text) 24%, transparent);
+}
+@keyframes navPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 100% { box-shadow: 0 0 0 6px transparent; } }
+@keyframes navShimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+@keyframes navShine { 0%, 60% { transform: translateX(-120%) skewX(-20deg); } 100% { transform: translateX(260%) skewX(-20deg); } }
+
+@media (min-width: 861px) {
+  /* Blur lives on pseudo-elements so the dropdowns can still blur the page behind them */
+  .site-header { background: transparent; backdrop-filter: none; }
+  .site-header::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--header-bg); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); }
+
+  /* The band: frosted strip, faint red glow in the middle, a light that sweeps along its top edge */
+  .main-nav { position: relative; isolation: isolate; border-top: 1px solid var(--nav-sep); }
+  .main-nav::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; box-shadow: inset 0 1px 0 var(--nav-hi);
+    background: radial-gradient(40% 140% at 50% 120%, var(--nav-glow), transparent 70%), var(--nav-band);
+  }
+  .main-nav::after {
+    content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 1px; pointer-events: none;
+    background: linear-gradient(90deg, transparent 0%, transparent 35%, var(--accent-text) 50%, transparent 65%, transparent 100%) 0 0 / 200% 100% no-repeat;
+    animation: navShimmer 6s linear infinite;
+  }
+  .nav-inner { justify-content: center; gap: 4px; height: 48px; }
+
+  .nav-inner > a, .nav-trigger, .nav-drop-head {
+    position: relative; height: 48px; color: var(--nav-text);
+    background: radial-gradient(60% 90% at 50% 100%, var(--nav-glow), transparent 75%) center bottom / 100% 0% no-repeat;
+    transition: color .2s, background-size .3s ease;
+  }
+  .nav-inner > a, .nav-trigger { padding: 0 18px; }
+  .nav-drop-head .nav-drop-link, .nav-drop-toggle { height: 48px; color: inherit; background: none; }
+  .main-nav .nav-drop-head .nav-drop-link { padding-left: 18px; }
+  .nav-drop-toggle { padding-right: 16px; }
+
+  /* Hover / current page: text lights up, red underline grows from the centre with a spotlight above it */
+  .nav-inner > a::after, .nav-trigger::after, .nav-drop-head::after {
+    content: ''; position: absolute; left: 18px; right: 18px; bottom: -1px; height: 2px; border-radius: 2px;
+    background: var(--accent-text); box-shadow: 0 0 10px var(--accent-text), 0 0 2px var(--accent-text);
+    transform: scaleX(0); transition: transform .28s ease;
+  }
+  .nav-inner > a:hover, .has-mega:hover .nav-trigger, .nav-drop:hover .nav-drop-head,
+  .nav-inner > a.active, .nav-drop-head:has(.nav-drop-link.active) { color: var(--text); background-size: 100% 100%; }
+  .main-nav .nav-drop-link.active, .main-nav .nav-drop-link:hover { color: inherit; }
+  .nav-inner > a:hover::after, .has-mega:hover .nav-trigger::after, .nav-drop:hover .nav-drop-head::after,
+  .nav-inner > a.active::after, .nav-drop-head:has(.nav-drop-link.active)::after { transform: scaleX(1); }
+  .nav-trigger svg, .nav-drop-toggle svg { transition: transform .25s, opacity .25s; opacity: .6; }
+  .has-mega:hover .nav-trigger svg, .nav-drop:hover .nav-drop-toggle svg { transform: rotate(180deg); opacity: 1; }
+
+  /* Sale: glossy red badge with a live dot and a light sweep */
+  .nav-inner > a[href$='/sale'], .nav-inner > a[href$='/sale']:hover, .nav-inner > a[href$='/sale'].active {
+    margin: 0 6px; padding: 0 22px 0 32px; color: #fff; letter-spacing: 1px;
+    background: linear-gradient(135deg, #ef2b3d, var(--accent)) center / 100% 100% no-repeat;
+    clip-path: inset(10px 4px round 999px); transition: filter .2s;
+  }
+  .nav-inner > a[href$='/sale']:hover { filter: brightness(1.12) saturate(1.1); }
+  .nav-inner > a[href$='/sale']::before { content: ''; position: absolute; top: 50%; left: 17px; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: #fff; animation: navPulse 1.8s ease-out infinite; }
+  .nav-inner > a[href$='/sale']::after {
+    left: 0; right: auto; top: 0; bottom: 0; width: 40%; height: auto; border-radius: 0; box-shadow: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent);
+    transform: translateX(-120%) skewX(-20deg); animation: navShine 3.5s ease-in-out infinite;
+  }
+
+  /* Glass dropdowns hanging from the band */
+  .mega {
+    top: calc(100% + 1px); padding: 8px; border-radius: 0 0 14px 14px; background: var(--nav-menu); border-color: var(--nav-sep); border-top: 0;
+    box-shadow: inset 0 2px 0 var(--accent-text), 0 -1px 18px var(--nav-glow), var(--shadow);
+    backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%);
+    transform: translateY(8px); transform-origin: top center;
+  }
+  .mega a { gap: 0; border-radius: 8px; color: var(--nav-text); transition: background .18s, color .18s, padding .18s; }
+  .mega a::before { content: ''; width: 0; height: 2px; border-radius: 2px; background: var(--accent-text); box-shadow: 0 0 6px var(--accent-text); transition: width .18s, margin .18s; }
+  .mega a:hover, .mega a.active { background: linear-gradient(90deg, var(--nav-glow), transparent 85%); color: var(--text); }
+  .mega a:hover::before, .mega a.active::before { width: 12px; margin-right: 8px; }
+}
+@media (min-width: 861px) and (prefers-reduced-motion: reduce) {
+  .main-nav::after, .nav-inner > a[href$='/sale']::before, .nav-inner > a[href$='/sale']::after { animation: none; }
+}
