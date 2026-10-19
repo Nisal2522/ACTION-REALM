@@ -44,21 +44,21 @@ export default function ProductCard({ product }) {
         <p className="card-brand">{product.brand}</p>
         <Link to={`/products/${product.slug}`} className="card-title">{product.name}</Link>
         {count > 0 && <Stars value={average} count={count} size={13} />}
-        <div className="price-row">
-          <span className="price">{formatPrice(product.price)}</span>
-          {sale && <span className="compare">{formatPrice(product.compareAt)}</span>}
+        <div className="card-foot">
+          <div className="card-price">
+            <span className="price">{formatPrice(product.price)}</span>
+            {sale && <span className="compare">{formatPrice(product.compareAt)}</span>}
+          </div>
+          {soldOut ? (
+            <button className="pill-cta ghost" onClick={() => openNotify(product.id)}>
+              <BellIcon width={15} height={15} /> Notify me
+            </button>
+          ) : (
+            <button className="pill-cta" onClick={() => addToCart(product.id)}>
+              <PlusIcon width={15} height={15} /> {isPreorder(product) ? 'Pre-order' : 'Add to cart'}
+            </button>
+          )}
         </div>
-        {soldOut ? (
-          <button className="btn btn-block btn-sm btn-outline" onClick={() => openNotify(product.id)}>
-            <BellIcon width={16} height={16} />
-            Notify Me
-          </button>
-        ) : (
-          <button className="btn btn-block btn-sm" onClick={() => addToCart(product.id)}>
-            <PlusIcon width={16} height={16} />
-            {isPreorder(product) ? 'Pre-Order Now' : 'Add To Cart'}
-          </button>
-        )}
       </div>
     </article>
   );

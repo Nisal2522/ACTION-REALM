@@ -68,7 +68,15 @@ export const DEFAULT_SETTINGS = {
   headerMenu: [
     { id: 'm1', label: 'Home', url: '/', type: 'link', enabled: true },
     { id: 'm2', label: 'About Us', url: '/about', type: 'link', enabled: true },
-    { id: 'm3', label: 'Stocks', url: '/collections/all', type: 'link', enabled: true },
+    {
+      id: 'm3', label: 'Stocks', url: '/collections/all', type: 'dropdown', enabled: true,
+      children: [
+        { label: 'In Stock', url: '/collections/in-stock' },
+        { label: 'Pre-Order', url: '/collections/pre-orders' },
+        { label: 'Sold Out', url: '/collections/sold-out' },
+        { label: 'New Arrivals', url: '/collections/new-arrivals' },
+      ],
+    },
     { id: 'm4', label: 'Franchises', url: '', type: 'franchises', enabled: true },
     { id: 'm5', label: 'Sale', url: '/collections/sale', type: 'link', enabled: true },
     { id: 'm6', label: 'Contact Us', url: '/contact', type: 'link', enabled: true },
@@ -126,7 +134,7 @@ export const DEFAULT_SETTINGS = {
     storyText: [
       "ACTION REALM is Sri Lanka's home for premium action figures, statues and pop-culture collectibles.",
       'We are collectors ourselves. Every figure we sell is officially licensed, carefully inspected and packed to survive the journey to your shelf.',
-      'From Hot Toys and Iron Studios to Funko and Bandai, we bring the world’s best collectible brands to Sri Lanka — with local warranty support, installment plans and island-wide delivery.',
+      'From Hot Toys and Iron Studios to Funko and Bandai, we bring the world’s best collectible brands to Sri Lanka, with local warranty support, installment plans and island-wide delivery.',
     ].join('\n\n'),
     storyButton: 'Explore the collection',
     storyImage1: 'https://images.unsplash.com/photo-1741512612523-d6b9b7cdd18b?auto=format&fit=crop&w=700&q=75',
@@ -137,7 +145,7 @@ export const DEFAULT_SETTINGS = {
       { icon: 'shield', title: '100% Authentic', text: 'Every figure is officially licensed and sourced from authorised distributors. No bootlegs, ever.' },
       { icon: 'store', title: 'Packed Like Treasure', text: 'Double-boxed, foam-wrapped and inspected before it leaves us, so it reaches your shelf in mint condition.' },
       { icon: 'truck', title: 'Island-wide Delivery', text: 'Insured delivery to all 25 districts, with updates on WhatsApp from dispatch to your door.' },
-      { icon: 'heart', title: 'Run by Collectors', text: 'We collect too. Ask us anything — from scale and paint quality to release dates.' },
+      { icon: 'heart', title: 'Run by Collectors', text: 'We collect too. Ask us anything, from scale and paint quality to release dates.' },
     ],
     showStores: true,
     storesTitle: 'Visit our stores',

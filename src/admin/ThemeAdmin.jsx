@@ -26,7 +26,7 @@ export default function ThemeAdmin() {
         <Section title="Style">
           <div className="form-grid">
             <label className="field span-2">
-              <span className="field-label">Corner rounding — {radius}px</span>
+              <span className="field-label">Corner rounding: {radius}px</span>
               <input type="range" min="0" max="24" step="2" value={radius} onChange={(e) => d.set('radius', Number(e.target.value))} />
               <span className="muted small">0 = sharp, square corners · 24 = very rounded cards and images.</span>
             </label>

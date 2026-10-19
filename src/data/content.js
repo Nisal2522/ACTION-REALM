@@ -21,7 +21,7 @@ registerSeed('heroSlides', () => withIds('hs', [
   {
     eyebrow: 'Pre-Order Now',
     title: 'Museum-Grade Statues',
-    text: `Reserve premium statues with just ${Math.round(S.depositRate * 100)}% down — pay the rest on arrival.`,
+    text: `Reserve premium statues with just ${Math.round(S.depositRate * 100)}% down and pay the rest on arrival.`,
     cta: 'View Pre-Orders',
     link: '/collections/pre-orders',
     image: unsplash('1702138129392-364adea0ad00'),
@@ -81,7 +81,7 @@ registerSeed('perks', () => withIds('pk', [
 
 // Sample testimonials — replace with real customer reviews before launch.
 registerSeed('testimonials', () => withIds('tm', [
-  { name: 'Kasun P.', city: 'Colombo', rating: 5, text: 'Packaging was insane — double boxed with foam all around. My Hot Toys figure arrived in perfect condition.' },
+  { name: 'Kasun P.', city: 'Colombo', rating: 5, text: 'Packaging was insane, double boxed with foam all around. My Hot Toys figure arrived in perfect condition.' },
   { name: 'Dilini R.', city: 'Kandy', rating: 5, text: 'Pre-order process was smooth and they kept me updated the whole way. Will definitely order again.' },
   { name: 'Ashan W.', city: 'Galle', rating: 5, text: 'Genuine products at fair prices. Customer support replied on WhatsApp within minutes.' },
   { name: 'Nethmi S.', city: 'Negombo', rating: 5, text: 'Visited the store and the display is amazing. Staff really know their collectibles.' },
@@ -105,7 +105,7 @@ registerSeed('pages', () => [
     body: [
       `${S.name} is Sri Lanka's home for premium action figures, statues and pop-culture collectibles.`,
       'We are collectors ourselves. Every figure we sell is officially licensed, carefully inspected and packed to survive the journey to your shelf.',
-      'From Hot Toys and Iron Studios to Funko and Bandai, we bring the world’s best collectible brands to Sri Lanka — with local warranty support, installment plans and island-wide delivery.',
+      'From Hot Toys and Iron Studios to Funko and Bandai, we bring the world’s best collectible brands to Sri Lanka, with local warranty support, installment plans and island-wide delivery.',
     ].join('\n\n'),
   },
   {

@@ -2,6 +2,7 @@ import './data/seeds'; // register demo-backend starting data before anything re
 import './data/content';
 import { loadSettings } from './services/settings';
 import { ensureSampleData } from './data/sampleData';
+import { cleanSavedDashes } from './services/cleanup';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -13,6 +14,7 @@ import './index.css';
 import './features.css';
 import './admin/admin.css'; // last, so admin styles override shared ones
 
+cleanSavedDashes();
 loadSettings();
 ensureSampleData(); // demo orders, customers and inbox items (first run only)
 initAnalytics();

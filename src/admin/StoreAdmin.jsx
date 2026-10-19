@@ -103,7 +103,7 @@ export function Products() {
                 <td><Link to={`/products/${p.slug}`} className="strong-link" target="_blank">{p.name}</Link><div className="muted small">{p.brand} · {p.category} · {p.franchise}</div></td>
                 <td>{formatPrice(p.price)}{p.compareAt ? <div className="muted small strike">{formatPrice(p.compareAt)}</div> : null}</td>
                 <td className="center-col">
-                  {isPreorder(p) ? <span className="muted small">{p.eta || '—'}</span> : (
+                  {isPreorder(p) ? <span className="muted small">{p.eta || 'TBA'}</span> : (
                     <input className="input stock-input" type="number" min="0" value={p.stock}
                       onChange={(e) => db.update('products', p.id, { stock: Math.max(0, Number(e.target.value)) })} aria-label={`Stock for ${p.name}`} />
                   )}
@@ -237,19 +237,19 @@ export function Orders() {
   };
   const list = [...orders].reverse().filter((o) =>
     (filter === 'All' || o.status === filter)
-    && (!needle || [o.id, o.customer.name, o.customer.phone, o.customer.email].join(' ').toLowerCase().includes(needle)));
+    && (!needle || [o.id, o.customer.name, o.customer.phone, o.customer.email, o.shipmentNo].join(' ').toLowerCase().includes(needle)));
   const current = open && orders.find((o) => o.id === open);
 
   const exportExcel = () => downloadExcel('orders', [
-    ['Order', 'Date', 'Customer', 'Phone', 'Email', 'District', 'Total (Rs.)', 'Payment method', 'Payment status', 'Status'],
-    ...list.map((o) => [o.id, o.createdAt.slice(0, 10), o.customer.name, o.customer.phone, o.customer.email, o.address.district, o.total,
+    ['Order', 'Date', 'Customer', 'Phone', 'Email', 'District', 'Shipment No', 'Total (Rs.)', 'Payment method', 'Payment status', 'Status'],
+    ...list.map((o) => [o.id, o.createdAt.slice(0, 10), o.customer.name, o.customer.phone, o.customer.email, o.address.district, o.shipmentNo || '', o.total,
       METHOD_LABELS[o.payment.method] || o.payment.method, cleanPayment(o.payment.status), o.status]),
   ]);
 
   return (
     <>
       <div className="admin-toolbar wrap">
-        <SearchInput value={q} onChange={setQ} placeholder="Search order #, name, phone…" />
+        <SearchInput value={q} onChange={setQ} placeholder="Search order #, name, phone, shipment…" />
         <FilterSelect
           label="Order status"
           value={filter}
@@ -264,7 +264,7 @@ export function Orders() {
       {list.length ? (
         <div className="table-wrap">
           <table className="table">
-            <thead><tr><th>Order</th><th>Customer</th><th>Payment</th><th>Status</th><th className="num">Total</th><th className="actions-col">Actions</th></tr></thead>
+            <thead><tr><th>Order</th><th>Customer</th><th>Shipment No</th><th>Payment</th><th>Status</th><th className="num">Total</th><th className="actions-col">Actions</th></tr></thead>
             <tbody>
               {list.map((o) => {
                 const count = o.items.reduce((s, i) => s + i.qty, 0);
@@ -272,6 +272,7 @@ export function Orders() {
                   <tr key={o.id} className="clickable" onClick={() => setOpen(o.id)}>
                     <td><strong>#{o.id}</strong><div className="muted small">{fmtDate(o.createdAt)} · {count} {count === 1 ? 'item' : 'items'}</div></td>
                     <td>{o.customer.name}<div className="muted small">{o.customer.phone} · {o.address.district}</div></td>
+                    <td>{o.shipmentNo ? <span className="ship-chip">{o.shipmentNo}</span> : <span className="muted small">Not set</span>}</td>
                     <td><span className={`badge-status ${paymentTone(o.payment.status)}`}>{cleanPayment(o.payment.status)}</span></td>
                     <td><span className={`badge-status s-${o.status.toLowerCase()}`}>{o.status}</span></td>
                     <td className="num">{formatPrice(o.total)}{o.payLater > 0 && <div className="muted small">{formatPrice(o.payLater)} due later</div>}</td>
@@ -290,13 +291,13 @@ export function Orders() {
   );
 }
 
-// Side panel to update an order: status, payment, tracking and note in one place.
+// Side panel to update an order: status, payment, tracking and shipment number in one place.
 function OrderEditor({ order, onClose }) {
   const [f, setF] = useState({
     status: order.status,
     payment: cleanPayment(order.payment.status),
     tracking: order.trackingNumber || '',
-    note: order.adminNote || '',
+    shipmentNo: order.shipmentNo || '',
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const waNumber = order.customer.phone.replace(/^0/, '94').replace(/\D/g, '');
@@ -305,7 +306,7 @@ function OrderEditor({ order, onClose }) {
   const save = (e) => {
     e.preventDefault();
     if (f.status !== order.status) setOrderStatus(order.id, f.status);
-    db.update('orders', order.id, (x) => ({ payment: { ...x.payment, status: f.payment }, trackingNumber: f.tracking.trim(), adminNote: f.note }));
+    db.update('orders', order.id, (x) => ({ payment: { ...x.payment, status: f.payment }, trackingNumber: f.tracking.trim(), shipmentNo: f.shipmentNo.trim().toUpperCase() }));
     onClose();
   };
   const remove = () => {
@@ -349,8 +350,8 @@ function OrderEditor({ order, onClose }) {
             <input className="input" value={f.tracking} onChange={set('tracking')} placeholder="Shown to the customer" />
           </label>
           <label className="field">
-            <span className="field-label">Private note</span>
-            <input className="input" value={f.note} onChange={set('note')} placeholder="Only admins see this" />
+            <span className="field-label">Shipment No</span>
+            <input className="input" value={f.shipmentNo} onChange={set('shipmentNo')} placeholder="e.g. SHP-004" />
           </label>
         </div>
         <a className="wa-link" href={`https://wa.me/${waNumber}?text=${waText}`} target="_blank" rel="noreferrer">
@@ -425,11 +426,13 @@ export function ReviewsAdmin() {
           {list.map((r) => (
             <tr key={r.id}>
               <td><Stars value={r.rating} size={13} /> <strong>{r.title}</strong><div className="small">{r.text}</div><div className="muted small">{r.name}</div></td>
-              <td className="small">{products.find((p) => p.id === r.productId)?.name || '—'}</td>
+              <td className="small">{products.find((p) => p.id === r.productId)?.name || 'Deleted product'}</td>
               <td className="small">{fmtDate(r.createdAt)}</td>
               <td className="actions">
-                <label className="check small"><input type="checkbox" checked={r.verified} onChange={(e) => db.update('reviews', r.id, { verified: e.target.checked })} /> Verified</label>
-                <button className="icon-btn sm danger" onClick={() => db.remove('reviews', r.id)} aria-label="Delete"><TrashIcon width={16} height={16} /></button>
+                <span className="review-actions">
+                  <input type="checkbox" className="review-check" checked={Boolean(r.verified)} onChange={(e) => db.update('reviews', r.id, { verified: e.target.checked })} aria-label="Verified buyer" title="Verified buyer" />
+                  <button className="icon-btn sm danger" onClick={() => db.remove('reviews', r.id)} aria-label="Delete"><TrashIcon width={16} height={16} /></button>
+                </span>
               </td>
             </tr>
           ))}
@@ -446,6 +449,7 @@ export function Coupons() {
     <ListEditor
       collection="coupons"
       itemName="coupon"
+      headerAction
       sortable={false}
       intro="Discount codes customers enter in the cart or at checkout."
       newItem={{ code: '', type: 'percent', value: 10, minSubtotal: 0, note: '', active: true }}
@@ -468,7 +472,7 @@ export function Coupons() {
       columns={[
         { label: 'Code', render: (c) => <><strong>{c.code}</strong><div className="muted small">{c.note}</div></> },
         { label: 'Discount', render: (c) => (c.type === 'percent' ? `${c.value}%` : formatPrice(c.value)) },
-        { label: 'Min. order', render: (c) => (c.minSubtotal ? formatPrice(c.minSubtotal) : '—') },
+        { label: 'Min. order', render: (c) => (c.minSubtotal ? formatPrice(c.minSubtotal) : 'None') },
         { label: 'Times used', render: (c) => orders.filter((o) => o.couponCode === c.code).length },
         { label: 'Active', render: (c) => <input type="checkbox" checked={c.active} onChange={(e) => db.update('coupons', c.id, { active: e.target.checked })} aria-label={`Activate ${c.code}`} /> },
       ]}

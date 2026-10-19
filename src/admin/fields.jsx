@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CloseIcon, PlusIcon } from '../components/Icons';
 
-export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
+export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 
 // Shrink an uploaded photo so it fits comfortably in browser storage.
 export function resizeImage(file, max = 1200) {
@@ -86,7 +86,7 @@ export function Field({ field, value, onChange }) {
     return (
       <label className={`check ${field.span === 2 ? 'span-2' : ''}`}>
         <FieldInput field={field} value={value} onChange={onChange} /> {field.label}
-        {field.help && <span className="muted small"> — {field.help}</span>}
+        {field.help && <span className="muted small"> ({field.help})</span>}
       </label>
     );
   }

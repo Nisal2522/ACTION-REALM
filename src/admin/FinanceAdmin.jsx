@@ -68,7 +68,7 @@ function EntryPage({ kind }) {
       <div className="fin-kpis">
         <div className={`adm-card fin-kpi ${cfg.tone}`}><span className="kpi-label">{from || to || method || q ? 'Total (filtered)' : `Total ${cfg.noun}`}</span><strong>{formatPrice(total)}</strong><span className="muted small">{list.length} entries</span></div>
         <div className="adm-card fin-kpi"><span className="kpi-label">This month</span><strong>{formatPrice(thisMonth)}</strong><span className="muted small">{new Date().toLocaleDateString('en-LK', { month: 'long', year: 'numeric' })}</span></div>
-        <div className="adm-card fin-kpi"><span className="kpi-label">Biggest method</span><strong className="fin-small">{byMethod[0]?.[0] || '—'}</strong><span className="muted small">{byMethod[0] ? formatPrice(byMethod[0][1]) : 'No entries yet'}</span></div>
+        <div className="adm-card fin-kpi"><span className="kpi-label">Biggest method</span><strong className="fin-small">{byMethod[0]?.[0] || 'None yet'}</strong><span className="muted small">{byMethod[0] ? formatPrice(byMethod[0][1]) : 'No entries yet'}</span></div>
       </div>
 
       <div className="admin-toolbar wrap">
@@ -88,8 +88,8 @@ function EntryPage({ kind }) {
                 <td className="nowrap">{fmtDate(x.date)}</td>
                 <td><span className="badge-status">{x.method}</span></td>
                 <td>{x.description}</td>
-                <td className="muted">{x.shipmentNo || '—'}</td>
-                <td className="muted">{x.orderNo || '—'}</td>
+                <td className="muted">{x.shipmentNo}</td>
+                <td className="muted">{x.orderNo}</td>
                 <td className={`num strong ${cfg.tone}`}>{formatPrice(x.amount)}</td>
                 <td className="actions" onClick={(e) => e.stopPropagation()}>
                   <button className="icon-btn sm" onClick={() => setEditing(x)} aria-label="Edit"><EditIcon width={16} height={16} /></button>
@@ -99,7 +99,7 @@ function EntryPage({ kind }) {
             ))}
           </tbody>
         </table>
-        {!list.length && <p className="muted small table-empty">No {cfg.noun} entries {entries.length ? 'match these filters' : 'yet — click “Add ' + cfg.noun + '”'}.</p>}
+        {!list.length && <p className="muted small table-empty">No {cfg.noun} entries {entries.length ? 'match these filters' : 'yet. Click “Add ' + cfg.noun + '” to add one'}.</p>}
         <Pagination page={current} pageSize={pageSize} total={list.length} onPage={setPage} onPageSize={setPageSize} />
       </div>
 
@@ -149,7 +149,7 @@ function EntryForm({ cfg, methods, initial, onClose }) {
         </label>
         <label className="field span-2">
           <span className="field-label">{cfg.title} description</span>
-          <textarea className="input" rows={3} value={f.description} onChange={set('description')} placeholder={cfg.noun === 'income' ? 'e.g. Comic-con stall sales' : 'e.g. Customs clearance — batch 3'} />
+          <textarea className="input" rows={3} value={f.description} onChange={set('description')} placeholder={cfg.noun === 'income' ? 'e.g. Comic-con stall sales' : 'e.g. Customs clearance, batch 3'} />
         </label>
         <label className="field"><span className="field-label">Date</span><input className="input" type="date" value={f.date} onChange={set('date')} /></label>
         <label className="field">
@@ -263,7 +263,7 @@ export function BankAdmin() {
             <span><i className="out" />Money out {formatPrice(debit)}</span>
           </div>
           <div className="bk-hero-foot">
-            <span>Margin <strong>{credit ? `${((net / credit) * 100).toFixed(1)}%` : '—'}</strong></span>
+            <span>Margin <strong>{credit ? `${((net / credit) * 100).toFixed(1)}%` : '0%'}</strong></span>
             <span>Transactions <strong>{rows.length}</strong></span>
           </div>
         </div>
@@ -281,7 +281,7 @@ export function BankAdmin() {
 
         <div className="adm-card bk-chart">
           <div className="card-head"><h3>Monthly</h3><span className="muted small">in vs out</span></div>
-          {chart.length ? <BarPairChart data={chart} aLabel="In" bLabel="Out" height={180} /> : <p className="muted small">No data for this period.</p>}
+          {chart.length ? <BarPairChart data={chart} aLabel="In" bLabel="Out" width={380} height={240} /> : <p className="muted small">No data for this period.</p>}
         </div>
       </div>
 

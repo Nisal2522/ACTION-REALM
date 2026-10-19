@@ -53,7 +53,7 @@ const PHOTOS = {
 };
 
 export const describe = (name, brand, franchise) =>
-  `${name} from ${brand}. A highly detailed, officially licensed collectible from the ${franchise} universe — sculpted and painted for display, packed with care and delivered insured island-wide.`;
+  `${name} from ${brand}. A highly detailed, officially licensed collectible from the ${franchise} universe, sculpted and painted for display, packed with care and delivered insured island-wide.`;
 
 const p = (id, name, brand, category, franchise, price, opts = {}) => ({
   id,

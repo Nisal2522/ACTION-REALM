@@ -64,7 +64,7 @@ export default function SettingsAdmin() {
           <div className="form-grid">
             {F({ key: 'phone', label: 'Phone (shown on site)' })}
             {F({ key: 'email', label: 'Email', type: 'email' })}
-            {F({ key: 'whatsapp', label: 'WhatsApp number', help: 'Country code + number, digits only — e.g. 94771234567' })}
+            {F({ key: 'whatsapp', label: 'WhatsApp number', help: 'Country code and number, digits only. Example: 94771234567' })}
             {F({ key: 'socials.instagram', label: 'Instagram link' })}
             {F({ key: 'socials.facebook', label: 'Facebook link' })}
             {F({ key: 'socials.youtube', label: 'YouTube link' })}
@@ -101,8 +101,8 @@ export default function SettingsAdmin() {
             <div className="form-grid">
               {F({ key: 'deliveryFee', label: 'Delivery fee per order (Rs.)', type: 'number', min: 0, help: '0 = free delivery' })}
               {F({ key: 'freeDeliveryOver', label: 'Free delivery on orders over (Rs.)', type: 'number', min: 0, help: '0 = never free (when a fee is set)' })}
-              {F({ key: 'deliveryDays.colombo', label: 'Delivery time — Colombo & Gampaha (days)', placeholder: '1–2' })}
-              {F({ key: 'deliveryDays.other', label: 'Delivery time — other districts (days)', placeholder: '2–4' })}
+              {F({ key: 'deliveryDays.colombo', label: 'Delivery time for Colombo & Gampaha (days)', placeholder: '1–2' })}
+              {F({ key: 'deliveryDays.other', label: 'Delivery time for other districts (days)', placeholder: '2–4' })}
               {F({ key: 'installmentThreshold', label: '0% installments on orders over (Rs.)', type: 'number', min: 0 })}
             </div>
             <h3>Payment methods</h3>
@@ -158,7 +158,7 @@ export default function SettingsAdmin() {
               {F({ key: 'payhere.sandbox', label: 'Sandbox (test) mode', type: 'checkbox' })}
               {F({ key: 'payhere.hashEndpoint', label: 'Hash server URL', span: 2, help: 'A server that returns the payment hash. Never enter your merchant secret here.' })}
             </div>
-            <p className="muted small">Status: {SITE.payhere.merchantId && SITE.payhere.hashEndpoint ? 'connected' : 'not connected — card payments are simulated'}.</p>
+            <p className="muted small">Status: {SITE.payhere.merchantId && SITE.payhere.hashEndpoint ? 'connected' : 'not connected, so card payments are simulated'}.</p>
             <h3>Analytics</h3>
             <div className="form-grid">
               {F({ key: 'analytics.gaId', label: 'Google Analytics 4 ID', placeholder: 'G-XXXXXXX' })}
@@ -241,7 +241,7 @@ function DataTools() {
         <label className="btn btn-outline">Restore backup<input type="file" accept="application/json" hidden onChange={restore} /></label>
       </div>
       <h3>Sample data</h3>
-      <p className="muted small">Fill the store with 42 sample orders, 8 customers, messages, subscribers and restock requests — useful for demos. This replaces current orders and inbox items.</p>
+      <p className="muted small">Fill the store with 42 sample orders, 8 customers, messages, subscribers and restock requests. Useful for demos. This replaces current orders and inbox items.</p>
       <div className="row-gap">
         <button className="btn" onClick={() => { if (window.confirm('Replace current orders and inbox with sample data?')) { loadSampleData(); setDone('Sample data loaded.'); } }}>Load sample data</button>
       </div>

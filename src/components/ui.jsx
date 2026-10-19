@@ -34,7 +34,7 @@ export function Stars({ value = 0, count, size = 16, onChange }) {
   return (
     <span className={`stars-row ${onChange ? 'interactive' : ''}`} aria-label={`${value.toFixed(1)} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((n) => {
-        const fill = rounded >= n ? 'full' : rounded >= n - 0.5 ? 'half' : 'empty';
+        const fill = rounded >= n ? 'full' : rounded >= n - 0.5 ? 'half' : 'off';
         const star = <span className={`star ${fill}`} style={{ fontSize: size }}>★</span>;
         return onChange ? (
           <button type="button" key={n} onClick={() => onChange(n)} aria-label={`${n} star${n > 1 ? 's' : ''}`}>{star}</button>

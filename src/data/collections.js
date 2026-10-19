@@ -1,11 +1,12 @@
 import { slugify } from '../config/site';
-import { getBrands, getCategories, getFranchises, isAvailableNow, isOnSale, isPreorder } from './products';
+import { getBrands, getCategories, getFranchises, isAvailableNow, isOnSale, isPreorder, isSoldOut } from './products';
 
 const SPECIAL = {
   all: { title: 'All Products', filter: () => true },
   'in-stock': { title: 'In Stock', filter: isAvailableNow },
   'pre-orders': { title: 'Pre-Orders', filter: isPreorder },
   'new-arrivals': { title: 'New Arrivals', filter: (p) => p.isNew },
+  'sold-out': { title: 'Sold Out', filter: isSoldOut },
   sale: { title: 'On Sale', filter: isOnSale },
 };
 

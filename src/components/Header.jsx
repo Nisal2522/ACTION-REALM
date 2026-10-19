@@ -71,6 +71,21 @@ export default function Header() {
                 </div>
               );
             }
+            if (m.type === 'dropdown') {
+              return (
+                <div className={`has-mega nav-drop ${expanded === m.id ? 'expanded' : ''}`} key={m.id}>
+                  <span className="nav-drop-head">
+                    <NavLink to={m.url || '/'} end className="nav-drop-link">{m.label}</NavLink>
+                    <button className="nav-drop-toggle" onClick={() => setExpanded(expanded === m.id ? null : m.id)} aria-label={`Show ${m.label} options`} aria-expanded={expanded === m.id}>
+                      <ChevronIcon width={14} height={14} />
+                    </button>
+                  </span>
+                  <div className="mega single">
+                    {(m.children || []).map((c) => <NavLink key={c.url} to={c.url}>{c.label}</NavLink>)}
+                  </div>
+                </div>
+              );
+            }
             if (/^https?:/.test(m.url)) return <a key={m.id} href={m.url} target="_blank" rel="noreferrer">{m.label}</a>;
             return <NavLink key={m.id} to={m.url || '/'} end={m.url === '/'}>{m.label}</NavLink>;
           })}

@@ -48,6 +48,9 @@ export const ExternalIcon = (p) => (
 export const TrendIcon = ({ down, ...p }) => (
   <svg {...base} strokeWidth={2.5} {...p}>{down ? <path d="m3 7 7 7 4-4 7 7M21 11v6h-6" /> : <path d="m3 17 7-7 4 4 7-7M21 13V7h-6" />}</svg>
 );
+export const CameraIcon = (p) => (
+  <svg {...base} {...p}><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13.5" r="3.5" /></svg>
+);
 export const LockIcon = (p) => (
   <svg {...base} {...p}><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
 );

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { SITE } from '../config/site';
 
-const siteTitle = () => `${SITE.name.replace(/\b\w+/g, (w) => w[0] + w.slice(1).toLowerCase())}${SITE.slogan ? ` — ${SITE.slogan}` : ''}`;
+const siteTitle = () => `${SITE.name.replace(/\b\w+/g, (w) => w[0] + w.slice(1).toLowerCase())}${SITE.slogan ? ` | ${SITE.slogan}` : ''}`;
 
 function setMeta(attr, key, content) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`);

@@ -31,7 +31,7 @@ Almost everything is managed in the **Admin panel** (`/admin`):
 | Orders | Order status, payment status, courier tracking number, private notes, WhatsApp updates, Excel export |
 | Discounts | Discount codes (% or Rs.), minimum order, on/off, times used |
 | Products | Add / edit / delete, multiple photos, prices, sale prices, stock, pre-orders, Featured & New tags |
-| Reviews | Delete reviews, mark as verified |
+| Reviews | See and delete customer reviews |
 | Income | Record income: method (list or custom), description, date, amount, shipment no, order no — search, filter, Excel export |
 | Expenses | Same fields for money going out (stock, shipping, customs, rent…) |
 | Bank & Profit | Debit (expenses) and credit (income + pre-order payments) by date or shipment, running balance, profit/loss dashboard, monthly chart, filters, Excel statement |

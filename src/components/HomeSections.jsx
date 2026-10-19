@@ -6,6 +6,7 @@ import { collectionUrl } from '../data/collections';
 import { useContent } from '../data/content';
 import { useStore } from '../context/StoreContext';
 import ProductCard from './ProductCard';
+import ShowcaseCard from './ShowcaseCard';
 import ProductImage from './ProductImage';
 import { SaleCountdown } from './ui';
 import { CardIcon, ChevronIcon, ClockIcon, HeartIcon, ShieldIcon, StoreIcon, TagIcon, TruckIcon } from './Icons';
@@ -150,7 +151,8 @@ export function ProductTabs() {
   );
 }
 
-export function ProductRail({ title, products, to }) {
+// variant: 'default' (standard cards), 'showcase' (image-first) or 'ranked' (numbered chart).
+export function ProductRail({ title, products, to, variant = 'default' }) {
   if (!products.length) return null;
   return (
     <section className="section container">
@@ -158,7 +160,11 @@ export function ProductRail({ title, products, to }) {
         <h2>{title}</h2>
         {to && <Link to={to} className="link">View all →</Link>}
       </div>
-      <div className="rail">{products.map((p) => <ProductCard key={p.id} product={p} />)}</div>
+      <div className={`rail rail-${variant}`}>
+        {products.map((p, i) => (variant === 'default'
+          ? <ProductCard key={p.id} product={p} />
+          : <ShowcaseCard key={p.id} product={p} variant={variant} rank={i + 1} />))}
+      </div>
     </section>
   );
 }

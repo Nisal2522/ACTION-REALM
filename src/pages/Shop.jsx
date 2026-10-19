@@ -132,14 +132,6 @@ export default function Shop() {
             <button className="icon-btn" onClick={() => setFiltersOpen(false)} aria-label="Close filters"><CloseIcon /></button>
           </div>
           <div className="filters-body">
-            <div className="filter-group">
-              <h4>Availability</h4>
-              {[['all', 'All'], ...Object.entries(AVAILABILITY).map(([k, v]) => [k, v.label])].map(([v, l]) => (
-                <label key={v}>
-                  <input type="radio" name="avail" checked={availability === v} onChange={() => update({ avail: v === 'all' ? null : v })} /> {l}
-                </label>
-              ))}
-            </div>
             {categoryOptions.length > 1 && (
               <div className="filter-group">
                 <h4>Category</h4>

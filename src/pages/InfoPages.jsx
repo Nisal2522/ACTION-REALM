@@ -49,7 +49,7 @@ export function InfoPage() {
           <div className="policy-help">
             <div>
               <h3>Have a question about this?</h3>
-              <p className="muted">Our team is happy to help — reach us on WhatsApp or send a message.</p>
+              <p className="muted">Our team is happy to help. Reach us on WhatsApp or send a message.</p>
             </div>
             <div className="policy-help-actions">
               <a className="btn whatsapp-btn" href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noreferrer"><WhatsAppIcon width={18} height={18} /> WhatsApp</a>
@@ -162,7 +162,7 @@ export function Rewards() {
           <div className="coins-hero-text">
             <span className="page-hero-label">Loyalty programme</span>
             <h1>{SITE.coinsName}</h1>
-            <p>Every order earns coins you can spend on your next figure. No cards, no codes — it all happens automatically.</p>
+            <p>Every order earns coins you can spend on your next figure. No cards, no codes. It all happens automatically.</p>
             {user ? (
               <div className="coins-balance">
                 <span className="muted small">Your balance</span>
@@ -187,7 +187,7 @@ export function Rewards() {
       <div className="container section">
         <div className="about-center-head"><span className="about-kicker">How it works</span><h2>Three simple steps</h2></div>
         <div className="coin-steps">
-          <div className="coin-step"><span className="coin-step-num">1</span><h3>Create an account</h3><p className="muted">Sign up free — it takes less than a minute.</p></div>
+          <div className="coin-step"><span className="coin-step-num">1</span><h3>Create an account</h3><p className="muted">Sign up free. It takes less than a minute.</p></div>
           <div className="coin-step"><span className="coin-step-num">2</span><h3>Shop &amp; earn</h3><p className="muted">Get 1 coin for every {formatPrice(perRs)} you spend, added as soon as you order.</p></div>
           <div className="coin-step"><span className="coin-step-num">3</span><h3>Spend at checkout</h3><p className="muted">Each coin is worth {formatPrice(SITE.coinValue)}. Tick “Use {SITE.coinsName}” to apply them.</p></div>
         </div>
@@ -217,7 +217,7 @@ export function Rewards() {
         <div className="coin-rules">
           {[
             'Coins are added the moment your order is placed.',
-            `Use them on any order — just tick “Use ${SITE.coinsName}” at checkout.`,
+            `Use them on any order. Just tick “Use ${SITE.coinsName}” at checkout.`,
             'Coins expire 12 months after they are earned.',
             'Coins have no cash value and cannot be transferred.',
           ].map((t) => <div key={t} className="coin-rule"><span className="coin-rule-check"><CheckIcon width={14} height={14} /></span>{t}</div>)}

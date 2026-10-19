@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HOME_SECTION_LABELS, slugify } from '../config/site';
 import { db, useCollection } from '../services/db';
-import { ChevronIcon, ExternalIcon, FileIcon, HomeIcon, LockIcon, MailIcon, PlusIcon, TrashIcon, UsersIcon } from '../components/Icons';
+import { ChevronIcon, ExternalIcon, FileIcon, HomeIcon, LockIcon, MailIcon, TrashIcon, UsersIcon } from '../components/Icons';
 import { HomepageAdmin } from './ContentAdmin';
 import { ObjectList, StringList } from './fields';
 import { SaveBar, Section, useDraft } from './draft';
@@ -46,21 +46,18 @@ export default function PagesCMS() {
         {BUILT_IN.map(({ id, title, url, Icon, desc }) => (
           <button key={id} className="cms-page-card" onClick={() => setOpen({ kind: id })}>
             <span className="cms-page-icon"><Icon width={20} height={20} /></span>
-            <span className="cms-page-text"><strong>{title}</strong><span className="muted small">{desc}</span><code>{url}</code></span>
+            <span className="cms-page-text"><strong>{title}</strong><span className="muted small">{desc}</span></span>
             <ChevronIcon dir="right" width={16} height={16} />
           </button>
         ))}
       </div>
 
-      <div className="cms-group-title row-between">
-        <span>Information pages</span>
-        <button className="btn btn-sm" onClick={() => setOpen({ kind: 'policy', id: null })}><PlusIcon width={14} height={14} /> New page</button>
-      </div>
+      <div className="cms-group-title">Information pages</div>
       <div className="cms-page-grid">
         {policies.map((p) => (
           <button key={p.id} className="cms-page-card" onClick={() => setOpen({ kind: 'policy', id: p.id })}>
             <span className="cms-page-icon"><FileIcon width={20} height={20} /></span>
-            <span className="cms-page-text"><strong>{p.title}</strong><span className="muted small">{(p.body || '').slice(0, 70)}…</span><code>/pages/{p.slug}</code></span>
+            <span className="cms-page-text"><strong>{p.title}</strong><span className="muted small">{(p.body || '').slice(0, 70)}…</span></span>
             <ChevronIcon dir="right" width={16} height={16} />
           </button>
         ))}

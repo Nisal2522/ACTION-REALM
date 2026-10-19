@@ -111,7 +111,7 @@ export function TrackOrder() {
             <div className="info-tile">
               <span className="info-tile-icon wa"><WhatsAppIcon width={20} height={20} /></span>
               <h3>Need help?</h3>
-              <p className="muted">Message us on <a className="link" href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a> — we usually reply within minutes.</p>
+              <p className="muted">Message us on <a className="link" href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>. We usually reply within minutes.</p>
             </div>
           </div>
         )}

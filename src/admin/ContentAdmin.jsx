@@ -76,7 +76,7 @@ function HomeLayout() {
   );
 }
 
-const thumb = (src, round) => (src ? <img src={src} alt="" className={`list-thumb ${round ? 'round' : ''}`} /> : <span className="muted small">—</span>);
+const thumb = (src, round) => (src ? <img src={src} alt="" className={`list-thumb ${round ? 'round' : ''}`} /> : <span className="muted small">No image</span>);
 
 function HeroSlides() {
   return (
@@ -223,7 +223,7 @@ export function PagesAdmin() {
       ]}
       columns={[
         { label: 'Page', render: (p) => <><strong>{p.title}</strong><div className="muted small"><Link to={`/pages/${p.slug}`} className="link" target="_blank">/pages/{p.slug}</Link></div></> },
-        { label: 'Footer', render: (p) => (p.showInFooter ? 'Shown' : '—') },
+        { label: 'Footer', render: (p) => (p.showInFooter ? 'Shown' : 'Hidden') },
       ]}
     />
   );

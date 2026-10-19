@@ -107,9 +107,9 @@ export function Sparkline({ values, width = 96, height = 32 }) {
 }
 
 // Side-by-side bars per period (e.g. credit vs debit each month). data: [{ label, a, b }]
-export function BarPairChart({ data, aLabel = 'Credit', bLabel = 'Debit', aColor = '#22c55e', bColor = '#ef4444', height = 220 }) {
+export function BarPairChart({ data, aLabel = 'Credit', bLabel = 'Debit', aColor = '#22c55e', bColor = '#ef4444', height = 220, width = 640 }) {
   const [hover, setHover] = useState(null);
-  const W = 640;
+  const W = width;
   const H = height;
   const pad = { l: 44, r: 8, t: 12, b: 26 };
   const max = Math.max(1, ...data.flatMap((d) => [d.a, d.b]));

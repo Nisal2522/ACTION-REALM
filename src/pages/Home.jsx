@@ -20,9 +20,9 @@ export default function Home() {
     tabs: () => <ProductTabs />,
     characters: () => <CharacterGrid />,
     categories: () => <CollectionGrid title={SITE.homeTitles.categories} names={getCategories()} />,
-    picks: () => <ProductRail title={SITE.homeTitles.picks} products={products.filter((p) => p.featured)} to="/collections/all" />,
+    picks: () => <ProductRail title={SITE.homeTitles.picks} products={products.filter((p) => p.featured)} to="/collections/all" variant="showcase" />,
     trending: () => trending && (
-      <ProductRail title={`${SITE.homeTitles.trending}: ${trending}`} products={products.filter((p) => p.franchise === trending)} to={collectionUrl(trending)} />
+      <ProductRail title={`${SITE.homeTitles.trending}: ${trending}`} products={products.filter((p) => p.franchise === trending).slice(0, 10)} to={collectionUrl(trending)} variant="ranked" />
     ),
     recent: () => <RecentlyViewed />,
     testimonials: () => <Testimonials />,

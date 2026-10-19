@@ -3,10 +3,12 @@ import { db, useCollection } from '../services/db';
 import SidePanel from './SidePanel';
 import { EditIcon, PlusIcon, TrashIcon } from '../components/Icons';
 import { Field } from './fields';
+import PageActions from './PageActions';
 
 // Generic add / edit / delete / reorder editor for any content collection.
 // fields: [{ key, label, type, ... }]  columns: [{ label, render(item) }]
-export default function ListEditor({ collection, title, intro, fields, columns, newItem = {}, sortable = true, validate, itemName = 'item' }) {
+// headerAction: put the Add button next to the page title (like Products) instead of in a toolbar card.
+export default function ListEditor({ collection, title, intro, fields, columns, newItem = {}, sortable = true, validate, itemName = 'item', headerAction = false }) {
   const items = useCollection(collection);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState('');
@@ -33,13 +35,19 @@ export default function ListEditor({ collection, title, intro, fields, columns, 
 
   return (
     <div className="list-editor">
-      <div className="admin-toolbar between">
-        <div>
-          {title && <h3 className="no-margin">{title}</h3>}
-          {intro && <p className="muted small no-margin">{intro}</p>}
+      {headerAction ? (
+        <PageActions>
+          <button className="btn" onClick={() => { setEditing({ ...newItem }); setError(''); }}><PlusIcon width={16} height={16} /> Add {itemName}</button>
+        </PageActions>
+      ) : (
+        <div className="admin-toolbar between">
+          <div>
+            {title && <h3 className="no-margin">{title}</h3>}
+            {intro && <p className="muted small no-margin">{intro}</p>}
+          </div>
+          <button className="btn" onClick={() => { setEditing({ ...newItem }); setError(''); }}><PlusIcon width={16} height={16} /> Add {itemName}</button>
         </div>
-        <button className="btn" onClick={() => { setEditing({ ...newItem }); setError(''); }}><PlusIcon width={16} height={16} /> Add {itemName}</button>
-      </div>
+      )}
       {items.length ? (
         <div className="table-wrap">
           <table className="table">
