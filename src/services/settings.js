@@ -18,7 +18,23 @@ export function loadSettings() {
   } catch {
     /* storage unavailable */
   }
+  removeSavedLink('/rewards', 'ar_settings_cleanup_v2');
   applySettings(db.get('settings', 'site'));
+}
+
+// One-time removal of a footer link from footers the admin already saved.
+function removeSavedLink(url, key) {
+  try {
+    if (localStorage.getItem(key)) return;
+    const columns = db.get('settings', 'site')?.footer?.columns;
+    if (columns?.some((c) => c.links?.some((l) => l.url === url))) {
+      const footer = db.get('settings', 'site').footer;
+      saveSettings({ footer: { ...footer, columns: columns.map((c) => ({ ...c, links: (c.links || []).filter((l) => l.url !== url) })) } });
+    }
+    localStorage.setItem(key, '1');
+  } catch {
+    /* storage unavailable */
+  }
 }
 
 // Re-renders when settings change, keeping SITE up to date.

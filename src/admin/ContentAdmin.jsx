@@ -6,7 +6,7 @@ import { saveSettings } from '../services/settings';
 import { PERK_ICONS } from '../components/HomeSections';
 import ListEditor from './ListEditor';
 
-const SUBTABS = ['Layout', 'Hero slides', 'Brand strip', 'Characters', 'Perks', 'Testimonials', 'FAQ'];
+const SUBTABS = ['Layout', 'Hero slides', 'Brand strip', 'Shop by franchise', 'Perks', 'Testimonials', 'FAQ'];
 
 export function HomepageAdmin() {
   const [tab, setTab] = useState('Layout');
@@ -18,7 +18,7 @@ export function HomepageAdmin() {
       {tab === 'Layout' && <HomeLayout />}
       {tab === 'Hero slides' && <HeroSlides />}
       {tab === 'Brand strip' && <BrandStrip />}
-      {tab === 'Characters' && <Characters />}
+      {tab === 'Shop by franchise' && <Characters />}
       {tab === 'Perks' && <Perks />}
       {tab === 'Testimonials' && <Testimonials />}
       {tab === 'FAQ' && <Faqs />}
@@ -128,17 +128,18 @@ function Characters() {
   return (
     <ListEditor
       collection="characters"
-      itemName="character"
-      intro="Round tiles under “Shop By Character”. Clicking one searches the shop for the search words."
-      newItem={{ name: '', query: '', image: '' }}
+      itemName="tile"
+      intro={`The photo cards under “${SITE.homeTitles.characters}” on the homepage. Add, edit, reorder or delete tiles here. Clicking a tile searches the shop for its search words, or opens the link if you set one.`}
+      newItem={{ name: '', query: '', link: '', image: '' }}
       fields={[
         { key: 'name', label: 'Name', required: true },
         { key: 'query', label: 'Search words', placeholder: 'e.g. spider-man', help: 'Products whose name/brand contains these words are shown.' },
-        { key: 'image', label: 'Photo (square)', type: 'image', max: 400, shape: 'square' },
+        { key: 'link', label: 'Link (optional)', placeholder: '/collections/marvel', help: 'Leave empty to use the search words.' },
+        { key: 'image', label: 'Photo (portrait, about 800 × 1000px)', type: 'image', max: 1000, shape: 'tall' },
       ]}
       columns={[
-        { label: 'Photo', render: (c) => thumb(c.image, true) },
-        { label: 'Character', render: (c) => <><strong>{c.name}</strong><div className="muted small">searches “{c.query || c.name}”</div></> },
+        { label: 'Photo', render: (c) => thumb(c.image) },
+        { label: 'Tile', render: (c) => <><strong>{c.name}</strong><div className="muted small">{c.link ? `opens ${c.link}` : `searches “${c.query || c.name}”`}</div></> },
       ]}
     />
   );

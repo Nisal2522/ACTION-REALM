@@ -101,7 +101,6 @@ export const DEFAULT_SETTINGS = {
           { label: 'Track Order', url: '/track-order' },
           { label: 'Contact Us', url: '/contact' },
           { label: 'Terms and Conditions', url: '/pages/terms' },
-          { label: 'Realm Coins', url: '/rewards' },
           { label: 'My Account', url: '/account' },
         ],
       },

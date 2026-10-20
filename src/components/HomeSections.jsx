@@ -207,15 +207,46 @@ export function CollectionGrid({ title, names }) {
 
 export function CharacterGrid() {
   const characters = useContent('characters');
+  const track = useRef(null);
+  const [edges, setEdges] = useState({ start: true, end: false });
+
+  const measure = () => {
+    const el = track.current;
+    if (!el) return;
+    setEdges({ start: el.scrollLeft < 8, end: el.scrollLeft + el.clientWidth > el.scrollWidth - 8 });
+  };
+  useEffect(() => {
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [characters.length]);
+
+  const scroll = (dir) => {
+    const el = track.current;
+    const card = el?.firstElementChild;
+    if (!card) return;
+    el.scrollBy({ left: dir * (card.offsetWidth + 20), behavior: 'smooth' });
+  };
+
   if (!characters.length) return null;
   return (
-    <section className="section container">
-      <div className="section-head"><h2>{SITE.homeTitles.characters}</h2></div>
-      <div className="character-grid">
+    <section className="section container franchise-section">
+      <div className="section-head">
+        <h2>{SITE.homeTitles.characters}</h2>
+        <div className="franchise-nav">
+          <Link to="/collections/all" className="franchise-all">View all <span className="franchise-circle sm"><ChevronIcon dir="right" /></span></Link>
+          <button className="franchise-circle" onClick={() => scroll(-1)} disabled={edges.start} aria-label="Previous"><ChevronIcon dir="left" /></button>
+          <button className="franchise-circle" onClick={() => scroll(1)} disabled={edges.end} aria-label="Next"><ChevronIcon dir="right" /></button>
+        </div>
+      </div>
+      <div className="franchise-track" ref={track} onScroll={measure}>
         {characters.map((c) => (
-          <Link key={c.id} to={`/collections/all?q=${encodeURIComponent(c.query || c.name)}`} className="character">
-            <span className="character-img">{c.image && <img src={c.image} alt="" loading="lazy" />}</span>
-            <span>{c.name}</span>
+          <Link key={c.id} to={c.link?.trim() || `/collections/all?q=${encodeURIComponent(c.query || c.name)}`} className="franchise-card">
+            {c.image ? <img src={sized(c.image, 800)} alt="" loading="lazy" /> : <span className="franchise-blank" />}
+            <span className="franchise-body">
+              <strong>{c.name}</strong>
+              <span className="franchise-circle"><ChevronIcon dir="right" /></span>
+            </span>
           </Link>
         ))}
       </div>
