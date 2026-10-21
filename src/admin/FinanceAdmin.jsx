@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { formatPrice } from '../config/site';
 import { EXPENSE_METHODS, INCOME_METHODS, buildLedger } from '../data/finance';
 import { db, useCollection } from '../services/db';
-import { EditIcon, ExpenseIcon, IncomeIcon, PlusIcon, TagIcon, TrashIcon, TrendIcon } from '../components/Icons';
+import { EditIcon, ExpenseIcon, IncomeIcon, PlusIcon, TagIcon, TrashIcon, TrendIcon, TruckIcon } from '../components/Icons';
 import SidePanel from './SidePanel';
 import PageActions from './PageActions';
 import Pagination from './Pagination';
@@ -14,6 +14,7 @@ import { fmtDate } from './fields';
 const today = () => new Date().toISOString().slice(0, 10);
 const monthKey = (d) => d.slice(0, 7);
 const inRange = (date, from, to) => (!from || date >= from) && (!to || date <= to);
+const NO_SHIPMENT = '__none';
 
 // ── Shared entry page (Income / Expenses) ───────────────────────────────────
 const CONFIG = {
@@ -26,6 +27,7 @@ function EntryPage({ kind }) {
   const entries = useCollection(cfg.collection);
   const [q, setQ] = useState('');
   const [method, setMethod] = useState('');
+  const [shipment, setShipment] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [page, setPage] = useState(1);
@@ -33,14 +35,23 @@ function EntryPage({ kind }) {
   const [editing, setEditing] = useState(null);
 
   const methods = [...new Set([...cfg.methods, ...entries.map((x) => x.method).filter(Boolean)])];
+  const shipmentCounts = entries.reduce((m, x) => ({ ...m, [x.shipmentNo || NO_SHIPMENT]: (m[x.shipmentNo || NO_SHIPMENT] || 0) + 1 }), {});
+  const shipmentOptions = [
+    { value: '', label: 'All shipments' },
+    ...Object.keys(shipmentCounts).filter((k) => k !== NO_SHIPMENT)
+      .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+      .map((k) => ({ value: k, label: `${k} (${shipmentCounts[k]})` })),
+    ...(shipmentCounts[NO_SHIPMENT] ? [{ value: NO_SHIPMENT, label: `No shipment (${shipmentCounts[NO_SHIPMENT]})` }] : []),
+  ];
   const needle = q.trim().toLowerCase();
   const list = [...entries]
     .filter((x) => (!method || x.method === method)
+      && (!shipment || (shipment === NO_SHIPMENT ? !x.shipmentNo : x.shipmentNo === shipment))
       && inRange(x.date, from, to)
       && (!needle || [x.description, x.shipmentNo, x.orderNo, x.method].join(' ').toLowerCase().includes(needle)))
     .sort((a, b) => b.date.localeCompare(a.date) || (b.createdAt || '').localeCompare(a.createdAt || ''));
 
-  useEffect(() => setPage(1), [q, method, from, to, pageSize]);
+  useEffect(() => setPage(1), [q, method, shipment, from, to, pageSize]);
   const lastPage = Math.max(1, Math.ceil(list.length / pageSize));
   const current = Math.min(page, lastPage);
   const visible = list.slice((current - 1) * pageSize, current * pageSize);
@@ -66,7 +77,7 @@ function EntryPage({ kind }) {
       </PageActions>
 
       <div className="fin-kpis">
-        <div className={`adm-card fin-kpi ${cfg.tone}`}><span className="kpi-label">{from || to || method || q ? 'Total (filtered)' : `Total ${cfg.noun}`}</span><strong>{formatPrice(total)}</strong><span className="muted small">{list.length} entries</span></div>
+        <div className={`adm-card fin-kpi ${cfg.tone}`}><span className="kpi-label">{shipment && shipment !== NO_SHIPMENT ? `Total for ${shipment}` : from || to || method || shipment || q ? 'Total (filtered)' : `Total ${cfg.noun}`}</span><strong>{formatPrice(total)}</strong><span className="muted small">{list.length} entries</span></div>
         <div className="adm-card fin-kpi"><span className="kpi-label">This month</span><strong>{formatPrice(thisMonth)}</strong><span className="muted small">{new Date().toLocaleDateString('en-LK', { month: 'long', year: 'numeric' })}</span></div>
         <div className="adm-card fin-kpi"><span className="kpi-label">Biggest method</span><strong className="fin-small">{byMethod[0]?.[0] || 'None yet'}</strong><span className="muted small">{byMethod[0] ? formatPrice(byMethod[0][1]) : 'No entries yet'}</span></div>
       </div>
@@ -74,6 +85,7 @@ function EntryPage({ kind }) {
       <div className="admin-toolbar wrap">
         <SearchInput value={q} onChange={setQ} placeholder="Search description, shipment or order no…" />
         <FilterSelect label="Method" icon={TagIcon} value={method} onChange={setMethod} options={[{ value: '', label: 'All methods' }, ...methods.map((m) => ({ value: m, label: m }))]} />
+        {shipmentOptions.length > 1 && <FilterSelect label="Shipment" icon={TruckIcon} value={shipment} onChange={setShipment} options={shipmentOptions} />}
         <label className="date-filter"><span>From</span><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
         <label className="date-filter"><span>To</span><input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></label>
         {list.length > 0 && <ExcelButton onClick={exportExcel} label={`Export ${kind} to Excel`} />}
@@ -88,7 +100,9 @@ function EntryPage({ kind }) {
                 <td className="nowrap">{fmtDate(x.date)}</td>
                 <td><span className="badge-status">{x.method}</span></td>
                 <td>{x.description}</td>
-                <td className="muted">{x.shipmentNo}</td>
+                <td className="muted" onClick={(e) => { if (x.shipmentNo) { e.stopPropagation(); setShipment(x.shipmentNo); } }}>
+                  {x.shipmentNo && <button className="link-btn" title={`Show only ${x.shipmentNo}`}>{x.shipmentNo}</button>}
+                </td>
                 <td className="muted">{x.orderNo}</td>
                 <td className={`num strong ${cfg.tone}`}>{formatPrice(x.amount)}</td>
                 <td className="actions" onClick={(e) => e.stopPropagation()}>

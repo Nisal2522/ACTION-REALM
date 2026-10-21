@@ -8,7 +8,7 @@ const newId = () => Math.random().toString(36).slice(2, 8);
 function useSiteLinks() {
   const pages = useCollection('pages').filter((p) => p.slug !== 'about');
   return [
-    ['/', 'Home'], ['/about', 'About Us'], ['/contact', 'Contact Us'], ['/collections/all', 'All products (Stocks)'],
+    ['/', 'Home'], ['/about', 'About Us'], ['/contact', 'Contact Us'], ['/collections/all', 'All products (Shop)'],
     ['/collections/in-stock', 'In stock'], ['/collections/pre-orders', 'Pre-orders'], ['/collections/new-arrivals', 'New arrivals'],
     ['/collections/sale', 'Sale'], ['/track-order', 'Track order'], ['/rewards', 'Realm Coins'], ['/account', 'My account'], ['/wishlist', 'Wishlist'],
     ...pages.map((p) => [`/pages/${p.slug}`, p.title]),
@@ -58,10 +58,11 @@ export default function NavigationAdmin() {
               <input className="input" value={m.label} onChange={(e) => updateItem(i, { label: e.target.value })} aria-label="Label" />
               <select className="input" value={m.type} onChange={(e) => updateItem(i, { type: e.target.value })} aria-label="Type">
                 <option value="link">Link</option>
+                <option value="shop">Shop dropdown (brands, category, franchise)</option>
                 <option value="franchises">Franchises dropdown</option>
               </select>
-              {m.type === 'link'
-                ? <input className="input" list="site-links" value={m.url} onChange={(e) => updateItem(i, { url: e.target.value })} placeholder="/page or https://…" aria-label="Link" />
+              {m.type === 'link' || m.type === 'shop'
+                ? <input className="input" list="site-links" value={m.url} onChange={(e) => updateItem(i, { url: e.target.value })} placeholder={m.type === 'shop' ? '/collections/all' : '/page or https://…'} aria-label="Link" title={m.type === 'shop' ? 'Where the Shop label goes. The dropdown lists brands, categories and franchises automatically.' : undefined} />
                 : <span className="muted small">Lists your franchises automatically</span>}
               <button type="button" className="icon-btn sm danger" onClick={() => setMenu(menu.filter((_, j) => j !== i))} aria-label="Remove"><TrashIcon width={15} height={15} /></button>
             </div>

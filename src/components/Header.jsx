@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { SITE } from '../config/site';
-import { getFranchises } from '../data/products';
+import { getBrands, getCategories, getFranchises } from '../data/products';
 import { collectionUrl } from '../data/collections';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
@@ -61,6 +61,30 @@ export default function Header() {
             <button className="icon-btn" onClick={() => setMenuOpen(false)} aria-label="Close menu"><CloseIcon /></button>
           </div>
           {menu.map((m) => {
+            if (m.type === 'shop') {
+              const groups = [['Brands', getBrands()], ['Category', getCategories()], ['Franchise', getFranchises()]].filter(([, list]) => list.length);
+              return (
+                <div className={`has-mega nav-drop nav-shop ${expanded === m.id ? 'expanded' : ''}`} key={m.id}>
+                  <span className="nav-drop-head">
+                    <NavLink to={m.url || '/collections/all'} end className="nav-drop-link">{m.label}</NavLink>
+                    <button className="nav-drop-toggle" onClick={() => setExpanded(expanded === m.id ? null : m.id)} aria-label={`Show ${m.label} options`} aria-expanded={expanded === m.id}>
+                      <ChevronIcon width={14} height={14} />
+                    </button>
+                  </span>
+                  <div className="mega shop-mega">
+                    {groups.map(([title, list]) => (
+                      <div key={title} className={`shop-mega-col ${list.length > 8 ? 'wide' : ''}`}>
+                        <h5>{title}</h5>
+                        <div className="shop-mega-links">
+                          {list.map((item) => <NavLink key={item} to={collectionUrl(item)}>{item}</NavLink>)}
+                        </div>
+                      </div>
+                    ))}
+                    <Link to={m.url || '/collections/all'} className="shop-mega-all">Shop all products <ChevronIcon dir="right" width={14} height={14} /></Link>
+                  </div>
+                </div>
+              );
+            }
             if (m.type === 'franchises') {
               return (
                 <div className={`has-mega ${expanded === m.id ? 'expanded' : ''}`} key={m.id}>

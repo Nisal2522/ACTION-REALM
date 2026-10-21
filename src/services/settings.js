@@ -19,7 +19,23 @@ export function loadSettings() {
     /* storage unavailable */
   }
   removeSavedLink('/rewards', 'ar_settings_cleanup_v2');
+  resetSaved('headerMenu', 'ar_settings_menu_v3');
   applySettings(db.get('settings', 'site'));
+}
+
+// One-time reset of a saved setting so a new default layout shows.
+function resetSaved(field, key) {
+  try {
+    if (localStorage.getItem(key)) return;
+    const doc = db.get('settings', 'site');
+    if (doc && field in doc) {
+      const { [field]: _drop, ...rest } = doc; // eslint-disable-line no-unused-vars
+      db.replaceAll('settings', [rest]);
+    }
+    localStorage.setItem(key, '1');
+  } catch {
+    /* storage unavailable */
+  }
 }
 
 // One-time removal of a footer link from footers the admin already saved.

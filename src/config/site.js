@@ -64,22 +64,17 @@ export const DEFAULT_SETTINGS = {
   radius: 12, // corner rounding in px
 
   // ── Navigation (Admin → Navigation) ──
-  // type 'link' opens a page; type 'franchises' shows the franchise dropdown.
+  // type 'link' opens a page; type 'shop' shows the Brands / Category / Franchise
+  // dropdown; type 'franchises' shows the franchise list only.
   headerMenu: [
     { id: 'm1', label: 'Home', url: '/', type: 'link', enabled: true },
-    { id: 'm2', label: 'About Us', url: '/about', type: 'link', enabled: true },
-    {
-      id: 'm3', label: 'Stocks', url: '/collections/all', type: 'dropdown', enabled: true,
-      children: [
-        { label: 'In Stock', url: '/collections/in-stock' },
-        { label: 'Pre-Order', url: '/collections/pre-orders' },
-        { label: 'Sold Out', url: '/collections/sold-out' },
-        { label: 'New Arrivals', url: '/collections/new-arrivals' },
-      ],
-    },
-    { id: 'm4', label: 'Franchises', url: '', type: 'franchises', enabled: true },
-    { id: 'm5', label: 'Sale', url: '/collections/sale', type: 'link', enabled: true },
-    { id: 'm6', label: 'Contact Us', url: '/contact', type: 'link', enabled: true },
+    { id: 'm2', label: 'Shop', url: '/collections/all', type: 'shop', enabled: true },
+    { id: 'm3', label: 'In Stock', url: '/collections/in-stock', type: 'link', enabled: true },
+    { id: 'm4', label: 'Pre-Orders', url: '/collections/pre-orders', type: 'link', enabled: true },
+    { id: 'm5', label: 'New Arrivals', url: '/collections/new-arrivals', type: 'link', enabled: true },
+    { id: 'm6', label: 'Sale', url: '/collections/sale', type: 'link', enabled: true },
+    { id: 'm7', label: 'About Us', url: '/about', type: 'link', enabled: true },
+    { id: 'm8', label: 'Contact Us', url: '/contact', type: 'link', enabled: false },
   ],
   footer: {
     columns: [

@@ -1406,6 +1406,13 @@ body.auth-lock { overflow: hidden; }
 
 @media (min-width: 861px) {
   .filters { top: calc(var(--header-h, 121px) + 16px); padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); }
+  /* Keep the sticky panel inside the window and let its options scroll on their own */
+  .filters { display: flex; flex-direction: column; max-height: calc(100vh - var(--header-h, 121px) - 32px); max-height: calc(100dvh - var(--header-h, 121px) - 32px); padding-right: 8px; }
+  .filters-head { flex: none; margin-right: 12px; }
+  .filters-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 12px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+  .filters-body::-webkit-scrollbar { width: 6px; }
+  .filters-body::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+  .filters-body::-webkit-scrollbar-track { background: transparent; }
   .filters-head { padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
 }
 @media (max-width: 860px) {
@@ -1416,4 +1423,21 @@ body.auth-lock { overflow: hidden; }
 }
 @media (max-width: 560px) {
   .shop-grid, .shop-grid:has(> :only-child), .shop-grid:has(> :nth-child(2):last-child), .shop-grid:has(> :nth-child(3):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}
+
+/* Shop mega menu: Brands / Category / Franchise columns */
+.shop-mega { grid-template-columns: auto auto auto; gap: 8px 28px; padding: 18px 20px 14px; min-width: 0; width: max-content; max-width: min(820px, calc(100vw - 32px)); }
+.shop-mega-col h5 { margin: 0 0 8px; padding: 0 10px; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-text); }
+.shop-mega-links { display: grid; gap: 1px; }
+.shop-mega-col.wide .shop-mega-links { grid-template-columns: repeat(2, minmax(130px, 1fr)); column-gap: 6px; }
+.main-nav .shop-mega a { white-space: nowrap; }
+.main-nav .shop-mega .shop-mega-all { grid-column: 1 / -1; justify-content: flex-end; gap: 6px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--line); border-radius: 0; font-weight: 700; color: var(--accent-text); }
+.main-nav .shop-mega .shop-mega-all:hover { background: none; text-decoration: underline; }
+@media (max-width: 860px) {
+  .shop-mega { width: auto; max-width: none; grid-template-columns: 1fr; gap: 10px; padding: 12px 0; }
+  .has-mega.expanded .shop-mega { display: grid; }
+  .shop-mega-col h5 { padding: 0 16px; }
+  .shop-mega-col.wide .shop-mega-links { grid-template-columns: 1fr 1fr; }
+  .main-nav .shop-mega a { padding: 8px 16px; white-space: normal; }
+  .main-nav .shop-mega .shop-mega-all { justify-content: flex-start; padding: 12px 16px 4px; }
 }
