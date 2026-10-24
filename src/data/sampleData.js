@@ -1,6 +1,7 @@
 // Realistic sample orders, customers and inbox items so every admin page and the dashboard
 // have something to show. Loaded once automatically; Admin → Settings → Data can load it again.
 import { SITE } from '../config/site';
+import { ORDER_STATUSES } from '../services/api';
 import { db } from '../services/db';
 import { getProducts } from './products';
 
@@ -52,7 +53,8 @@ function buildOrders(products, users) {
     let status;
     if (ageDays <= 1) status = 'Placed';
     else if (ageDays <= 3) status = pick(['Placed', 'Confirmed']);
-    else if (ageDays <= 7) status = pick(['Confirmed', 'Shipped']);
+    else if (ageDays <= 6) status = pick(['Dispatched', 'In Transit']);
+    else if (ageDays <= 10) status = pick(['Arrived', 'Customs', 'Received', 'Out for Delivery']);
     else status = rand() < 0.08 ? 'Cancelled' : 'Delivered';
 
     const items = [];
@@ -73,14 +75,15 @@ function buildOrders(products, users) {
     const hasPreorder = preValue > 0;
 
     const method = hasPreorder ? pick(['card', 'bank']) : pick(['card', 'card', 'bank', 'cod']);
-    const settled = ['Shipped', 'Delivered'].includes(status);
+    const settled = ORDER_STATUSES.indexOf(status) >= ORDER_STATUSES.indexOf('Dispatched') && status !== 'Cancelled';
     const paymentStatus = status === 'Cancelled' ? 'Refunded'
       : method === 'card' ? 'Paid'
         : method === 'bank' ? (settled || rand() < 0.5 ? 'Paid' : 'Awaiting transfer')
           : status === 'Delivered' ? 'Paid' : 'Pay on delivery';
 
-    const steps = { Placed: ['Placed'], Confirmed: ['Placed', 'Confirmed'], Shipped: ['Placed', 'Confirmed', 'Shipped'], Delivered: ['Placed', 'Confirmed', 'Shipped', 'Delivered'], Cancelled: ['Placed', 'Cancelled'] }[status];
-    const history = steps.map((s, i) => ({ status: s, at: new Date(created.getTime() + i * 1.1 * DAY).toISOString() }));
+    const steps = status === 'Cancelled' ? ['Placed', 'Cancelled'] : ORDER_STATUSES.slice(0, ORDER_STATUSES.indexOf(status) + 1);
+    const gap = Math.min(1.1 * DAY, (now - created.getTime()) / steps.length);
+    const history = steps.map((s, i) => ({ status: s, at: new Date(created.getTime() + i * gap).toISOString() }));
 
     orders.push({
       createdAt: created.toISOString(),

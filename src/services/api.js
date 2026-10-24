@@ -3,7 +3,31 @@ import { SITE, deliveryFor } from '../config/site';
 import { db, useCollection } from './db';
 import { getProduct, isPreorder } from '../data/products';
 
-export const ORDER_STATUSES = ['Placed', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
+// Delivery steps shown to customers. `key` is what is stored on the order.
+export const ORDER_STEPS = [
+  { key: 'Placed', label: 'Order Placed', text: 'Your order has been confirmed successfully.' },
+  { key: 'Confirmed', label: 'Confirmed & Processing', text: 'Your order will be packed and prepared for shipment.' },
+  { key: 'Dispatched', label: 'Dispatched', text: 'Your order has been shipped from the origin country.' },
+  { key: 'In Transit', label: 'In Transit', text: 'The shipment has been dispatched and is on its way to the destination country.' },
+  { key: 'Arrived', label: 'Arrived', text: 'Your parcel has arrived in Sri Lanka.' },
+  { key: 'Customs', label: 'Under Customs Clearance', text: 'Your parcel is being processed by Sri Lankan Customs.' },
+  { key: 'Received', label: 'Package Received', text: 'We have received your order after customs clearance in the Action Realm warehouse.' },
+  { key: 'Out for Delivery', label: 'Out for Delivery', text: 'Your order has been handed over to the local courier for delivery.' },
+  { key: 'Delivered', label: 'Delivered', text: 'Your order has been successfully delivered to you.' },
+];
+export const ORDER_STATUSES = [...ORDER_STEPS.map((s) => s.key), 'Cancelled'];
+export const statusLabel = (key) => ORDER_STEPS.find((s) => s.key === key)?.label || key;
+export const statusText = (key) => ORDER_STEPS.find((s) => s.key === key)?.text || '';
+export const statusClass = (key) => `s-${String(key).toLowerCase().replace(/[^a-z]+/g, '-')}`;
+
+// Orders saved before the 9-step tracking used "Shipped"; it is now "Dispatched".
+export function upgradeOrderStatuses() {
+  const old = db.all('orders').filter((o) => o.status === 'Shipped' || o.history?.some((h) => h.status === 'Shipped'));
+  old.forEach((o) => db.update('orders', o.id, (x) => ({
+    status: x.status === 'Shipped' ? 'Dispatched' : x.status,
+    history: (x.history || []).map((h) => (h.status === 'Shipped' ? { ...h, status: 'Dispatched' } : h)),
+  })));
+}
 
 // ── Coupons ─────────────────────────────────────────────────────────────────
 export function checkCoupon(code, subtotal) {

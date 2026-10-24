@@ -2,6 +2,7 @@ import './data/seeds'; // register demo-backend starting data before anything re
 import { upgradeTermsPage } from './data/content';
 import { loadSettings } from './services/settings';
 import { ensureSampleData } from './data/sampleData';
+import { upgradeOrderStatuses } from './services/api';
 import { cleanSavedDashes } from './services/cleanup';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -18,6 +19,7 @@ cleanSavedDashes();
 loadSettings();
 upgradeTermsPage();
 ensureSampleData(); // demo orders, customers and inbox items (first run only)
+upgradeOrderStatuses();
 initAnalytics();
 
 ReactDOM.createRoot(document.getElementById('root')).render(

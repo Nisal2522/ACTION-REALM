@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SITE, formatPrice } from '../config/site';
 import { describe, getBrands, getCategories, getFranchises, isPreorder, isSoldOut, saveProduct, useProducts } from '../data/products';
-import { ORDER_STATUSES, setOrderStatus } from '../services/api';
+import { ORDER_STATUSES, setOrderStatus, statusClass, statusLabel, statusText } from '../services/api';
 import { db, useCollection } from '../services/db';
 import { useAuth } from '../context/AuthContext';
 import ProductImage from '../components/ProductImage';
@@ -256,7 +256,7 @@ export function Orders() {
           onChange={setFilter}
           options={[
             { value: 'All', label: `All statuses (${orders.length})` },
-            ...ORDER_STATUSES.map((s) => ({ value: s, label: `${s} (${orders.filter((o) => o.status === s).length})` })),
+            ...ORDER_STATUSES.map((s) => ({ value: s, label: `${statusLabel(s)} (${orders.filter((o) => o.status === s).length})` })),
           ]}
         />
         {list.length > 0 && <ExcelButton onClick={exportExcel} label="Export orders to Excel" />}
@@ -277,7 +277,7 @@ export function Orders() {
                     <td>{o.customer.name}<div className="muted small">{o.customer.phone} · {o.address.district}</div></td>
                     <td>{o.shipmentNo ? <span className="ship-chip">{o.shipmentNo}</span> : <span className="muted small">Not set</span>}</td>
                     <td><span className={`badge-status ${paymentTone(o.payment.status)}`}>{cleanPayment(o.payment.status)}</span></td>
-                    <td><span className={`badge-status s-${o.status.toLowerCase()}`}>{o.status}</span></td>
+                    <td><span className={`badge-status ${statusClass(o.status)}`}>{statusLabel(o.status)}</span></td>
                     <td className="num">{formatPrice(o.total)}{o.payLater > 0 && <div className="muted small">{formatPrice(o.payLater)} due later</div>}</td>
                     <td className="actions">
                       <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setOpen(o.id); }} aria-label={`Edit order ${o.id}`} title="Edit order"><EditIcon width={16} height={16} /></button>
@@ -305,7 +305,7 @@ function OrderEditor({ order, onClose }) {
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const waNumber = order.customer.phone.replace(/^0/, '94').replace(/\D/g, '');
-  const waText = encodeURIComponent(`Hi ${order.customer.name.split(' ')[0]}, your ${SITE.name} order #${order.id} is now ${f.status}.${f.tracking ? ` Tracking: ${f.tracking}` : ''}`);
+  const waText = encodeURIComponent(`Hi ${order.customer.name.split(' ')[0]}, update on your ${SITE.name} order #${order.id}: ${statusLabel(f.status)}. ${statusText(f.status) || (f.status === 'Cancelled' ? 'Your order has been cancelled.' : '')}${f.tracking ? ` Tracking: ${f.tracking}` : ''}`);
 
   const save = (e) => {
     e.preventDefault();
@@ -340,7 +340,7 @@ function OrderEditor({ order, onClose }) {
           <label className="field">
             <span className="field-label">Order status</span>
             <select className="input" value={f.status} onChange={set('status')}>
-              {ORDER_STATUSES.map((s) => <option key={s}>{s}</option>)}
+              {ORDER_STATUSES.map((s, i) => <option key={s} value={s}>{s === 'Cancelled' ? s : `${i + 1}. ${statusLabel(s)}`}</option>)}
             </select>
           </label>
           <label className="field">

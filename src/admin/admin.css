@@ -893,3 +893,17 @@
   /* A later desktop rule made the sidebar sticky, so on phones it left a full empty screen above the page */
   .adm-side { position: fixed; top: 0; bottom: 0; left: 0; z-index: 40; height: 100vh; height: 100dvh; overflow-y: auto; }
 }
+
+/* New order status colours */
+.adm .s-dispatched { background: #fffbeb; color: #b45309; }
+.adm .s-in-transit { background: #fff7ed; color: #c2410c; }
+.adm .s-arrived { background: #ecfeff; color: #0e7490; }
+.adm .s-customs { background: #fefce8; color: #a16207; }
+.adm .s-received { background: #f0fdfa; color: #0f766e; }
+.adm .s-out-for-delivery { background: #eef2ff; color: #4338ca; }
+:root[data-theme='dark'] .adm .s-dispatched { background: rgba(245, 158, 11, .15); color: #fcd34d; }
+:root[data-theme='dark'] .adm .s-in-transit { background: rgba(249, 115, 22, .15); color: #fdba74; }
+:root[data-theme='dark'] .adm .s-arrived { background: rgba(6, 182, 212, .15); color: #67e8f9; }
+:root[data-theme='dark'] .adm .s-customs { background: rgba(234, 179, 8, .15); color: #fde047; }
+:root[data-theme='dark'] .adm .s-received { background: rgba(20, 184, 166, .15); color: #5eead4; }
+:root[data-theme='dark'] .adm .s-out-for-delivery { background: rgba(99, 102, 241, .15); color: #a5b4fc; }

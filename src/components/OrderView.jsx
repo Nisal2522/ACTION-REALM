@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { SITE, formatPrice } from '../config/site';
-import { ORDER_STATUSES } from '../services/api';
+import { ORDER_STEPS, statusClass, statusLabel } from '../services/api';
 import ProductImage from './ProductImage';
 import { CheckIcon } from './Icons';
 
@@ -8,17 +8,22 @@ const fmtDate = (iso) => new Date(iso).toLocaleString('en-LK', { day: 'numeric',
 
 export function StatusTimeline({ order }) {
   if (order.status === 'Cancelled') return <p className="notice notice-low">This order was cancelled.</p>;
-  const steps = ORDER_STATUSES.filter((s) => s !== 'Cancelled');
-  const current = steps.indexOf(order.status);
+  const current = ORDER_STEPS.findIndex((s) => s.key === order.status);
   return (
     <ol className="timeline">
-      {steps.map((s, i) => {
-        const at = order.history.find((h) => h.status === s)?.at;
+      {ORDER_STEPS.map((s, i) => {
+        const at = [...(order.history || [])].reverse().find((h) => h.status === s.key)?.at;
+        const state = i < current ? 'done' : i === current ? 'done current' : 'todo';
         return (
-          <li key={s} className={i <= current ? 'done' : ''}>
-            <span className="tl-dot">{i <= current && <CheckIcon width={12} height={12} />}</span>
-            <span className="tl-label">{s}</span>
-            {at && <span className="muted small">{fmtDate(at)}</span>}
+          <li key={s.key} className={state}>
+            <span className="tl-dot">{i <= current ? <CheckIcon width={12} height={12} /> : <span className="tl-num">{i + 1}</span>}</span>
+            <div className="tl-body">
+              <div className="tl-row">
+                <span className="tl-label">{s.label}</span>
+                {at && <span className="tl-date">{fmtDate(at)}</span>}
+              </div>
+              <em className="tl-text">{s.text}</em>
+            </div>
           </li>
         );
       })}
@@ -35,7 +40,7 @@ export default function OrderView({ order }) {
           <p className="muted small">Placed {fmtDate(order.createdAt)} · Payment: {order.payment.status}</p>
           {order.trackingNumber && <p className="small">Courier tracking: <strong>{order.trackingNumber}</strong></p>}
         </div>
-        <span className={`status-pill s-${order.status.toLowerCase()}`}>{order.status}</span>
+        <span className={`status-pill ${statusClass(order.status)}`}>{statusLabel(order.status)}</span>
       </div>
       <StatusTimeline order={order} />
       <div className="order-items">

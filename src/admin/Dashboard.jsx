@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { statusClass, statusLabel } from '../services/api';
 import { SITE, formatPrice } from '../config/site';
 import { isPreorder, useProducts } from '../data/products';
 import { useCollection } from '../services/db';
@@ -19,7 +20,7 @@ const PERIODS = [
 const keyOf = (d) => d.toISOString().slice(0, 10);
 const addDays = (key, n) => keyOf(new Date(new Date(`${key}T00:00:00Z`).getTime() + n * DAY));
 const daysBetween = (a, b) => Math.round((new Date(`${b}T00:00:00Z`) - new Date(`${a}T00:00:00Z`)) / DAY) + 1;
-const STATUS_COLORS = { Placed: '#3b82f6', Confirmed: '#a855f7', Shipped: '#f59e0b', Delivered: '#22c55e', Cancelled: '#ef4444' };
+const STATUS_COLORS = { Placed: '#3b82f6', Confirmed: '#a855f7', Dispatched: '#f59e0b', 'In Transit': '#f97316', Arrived: '#06b6d4', Customs: '#eab308', Received: '#14b8a6', 'Out for Delivery': '#6366f1', Delivered: '#22c55e', Cancelled: '#ef4444' };
 
 function greeting() {
   const h = new Date().getHours();
@@ -126,11 +127,12 @@ export default function Dashboard({ go }) {
   const top = Object.values(counts).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
   const topMax = Math.max(1, ...top.map((t) => t.revenue));
 
-  const statusSegments = Object.entries(STATUS_COLORS).map(([label, color]) => ({ label, color, value: orders.filter((o) => o.status === label).length }));
+  const statusSegments = Object.entries(STATUS_COLORS).map(([key, color]) => ({ label: statusLabel(key), color, value: orders.filter((o) => o.status === key).length }));
   const lowStock = products.filter((p) => !isPreorder(p) && p.stock <= 2).slice(0, 6);
   const todo = [
     { label: 'Orders to confirm', value: orders.filter((o) => o.status === 'Placed').length, tab: 'orders', Icon: BagIcon, tone: 'blue' },
-    { label: 'Orders to ship', value: orders.filter((o) => o.status === 'Confirmed').length, tab: 'orders', Icon: BoxIcon, tone: 'purple' },
+    { label: 'Orders to dispatch', value: orders.filter((o) => o.status === 'Confirmed').length, tab: 'orders', Icon: BoxIcon, tone: 'purple' },
+    { label: 'Ready to deliver', value: orders.filter((o) => o.status === 'Received').length, tab: 'orders', Icon: BoxIcon, tone: 'purple' },
     { label: 'Awaiting bank transfer', value: orders.filter((o) => o.payment.status === 'Awaiting transfer').length, tab: 'orders', Icon: TagIcon, tone: 'amber' },
   ];
 
@@ -183,7 +185,7 @@ export default function Dashboard({ go }) {
                     <td><strong>#{o.id}</strong></td>
                     <td><span className="dash-cust"><span className="dash-cust-av">{initials(o.customer.name)}</span>{o.customer.name}</span></td>
                     <td className="muted">{fmtDate(o.createdAt)}</td>
-                    <td><span className={`badge-status s-${o.status.toLowerCase()}`}>{o.status}</span></td>
+                    <td><span className={`badge-status ${statusClass(o.status)}`}>{statusLabel(o.status)}</span></td>
                     <td className="num">{formatPrice(o.total)}</td>
                   </tr>
                 ))}
