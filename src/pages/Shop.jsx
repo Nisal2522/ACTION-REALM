@@ -5,6 +5,7 @@ import { isAvailableNow, isSoldOut, useProducts } from '../data/products';
 import { getCollection } from '../data/collections';
 import ProductCard from '../components/ProductCard';
 import { ProductRail } from '../components/HomeSections';
+import CollectionBanner from '../components/CollectionBanner';
 import { CloseIcon, FilterIcon, SearchIcon } from '../components/Icons';
 import { SaleCountdown } from '../components/ui';
 import useTitle from '../hooks/useTitle';
@@ -119,17 +120,21 @@ export default function Shop() {
   return (
     <>
       <div className="container shop">
-        <header className="shop-head">
-          <div className="shop-title">
-            <span className="shop-eyebrow">{q ? 'Search results' : 'Collection'}</span>
-            <h1>{q ? `“${qRaw}”` : collection.title}</h1>
-            <p className="muted">
-              {plural(results.length)}
-              {q && slug !== 'all' && <> in {collection.title}</>}
-            </p>
-          </div>
-          {q && <RefineSearch key={qRaw} initial={qRaw} onClear={() => update({ q: null })} />}
-        </header>
+        {q ? (
+          <header className="shop-head">
+            <div className="shop-title">
+              <span className="shop-eyebrow">Search results</span>
+              <h1>{`“${qRaw}”`}</h1>
+              <p className="muted">
+                {plural(results.length)}
+                {slug !== 'all' && <> in {collection.title}</>}
+              </p>
+            </div>
+            <RefineSearch key={qRaw} initial={qRaw} onClear={() => update({ q: null })} />
+          </header>
+        ) : (
+          <CollectionBanner collection={collection} />
+        )}
         {slug === 'sale' && <SaleCountdown />}
 
         <div className="shop-layout">

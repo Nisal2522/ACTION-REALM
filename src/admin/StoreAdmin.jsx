@@ -237,13 +237,13 @@ export function Orders() {
   };
   const list = [...orders].reverse().filter((o) =>
     (filter === 'All' || o.status === filter)
-    && (!needle || [o.id, o.customer.name, o.customer.phone, o.customer.email, o.shipmentNo].join(' ').toLowerCase().includes(needle)));
+    && (!needle || [o.id, o.customer.name, o.customer.phone, o.customer.email, o.shipmentNo, o.remarks].join(' ').toLowerCase().includes(needle)));
   const current = open && orders.find((o) => o.id === open);
 
   const exportExcel = () => downloadExcel('orders', [
-    ['Order', 'Date', 'Customer', 'Phone', 'Email', 'District', 'Shipment No', 'Total (Rs.)', 'Payment method', 'Payment status', 'Status'],
+    ['Order', 'Date', 'Customer', 'Phone', 'Email', 'District', 'Shipment No', 'Total (Rs.)', 'Payment method', 'Payment status', 'Status', 'Remarks'],
     ...list.map((o) => [o.id, o.createdAt.slice(0, 10), o.customer.name, o.customer.phone, o.customer.email, o.address.district, o.shipmentNo || '', o.total,
-      METHOD_LABELS[o.payment.method] || o.payment.method, cleanPayment(o.payment.status), o.status]),
+      METHOD_LABELS[o.payment.method] || o.payment.method, cleanPayment(o.payment.status), o.status, o.remarks || '']),
   ]);
 
   return (
@@ -270,7 +270,10 @@ export function Orders() {
                 const count = o.items.reduce((s, i) => s + i.qty, 0);
                 return (
                   <tr key={o.id} className="clickable" onClick={() => setOpen(o.id)}>
-                    <td><strong>#{o.id}</strong><div className="muted small">{fmtDate(o.createdAt)} · {count} {count === 1 ? 'item' : 'items'}</div></td>
+                    <td>
+                      <strong>#{o.id}</strong><div className="muted small">{fmtDate(o.createdAt)} · {count} {count === 1 ? 'item' : 'items'}</div>
+                      {o.remarks && <div className="order-remark small" title={o.remarks}>{o.remarks}</div>}
+                    </td>
                     <td>{o.customer.name}<div className="muted small">{o.customer.phone} · {o.address.district}</div></td>
                     <td>{o.shipmentNo ? <span className="ship-chip">{o.shipmentNo}</span> : <span className="muted small">Not set</span>}</td>
                     <td><span className={`badge-status ${paymentTone(o.payment.status)}`}>{cleanPayment(o.payment.status)}</span></td>
@@ -298,6 +301,7 @@ function OrderEditor({ order, onClose }) {
     payment: cleanPayment(order.payment.status),
     tracking: order.trackingNumber || '',
     shipmentNo: order.shipmentNo || '',
+    remarks: order.remarks || '',
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const waNumber = order.customer.phone.replace(/^0/, '94').replace(/\D/g, '');
@@ -306,7 +310,7 @@ function OrderEditor({ order, onClose }) {
   const save = (e) => {
     e.preventDefault();
     if (f.status !== order.status) setOrderStatus(order.id, f.status);
-    db.update('orders', order.id, (x) => ({ payment: { ...x.payment, status: f.payment }, trackingNumber: f.tracking.trim(), shipmentNo: f.shipmentNo.trim().toUpperCase() }));
+    db.update('orders', order.id, (x) => ({ payment: { ...x.payment, status: f.payment }, trackingNumber: f.tracking.trim(), shipmentNo: f.shipmentNo.trim().toUpperCase(), remarks: f.remarks.trim() }));
     onClose();
   };
   const remove = () => {
@@ -352,6 +356,10 @@ function OrderEditor({ order, onClose }) {
           <label className="field">
             <span className="field-label">Shipment No</span>
             <input className="input" value={f.shipmentNo} onChange={set('shipmentNo')} placeholder="e.g. SHP-004" />
+          </label>
+          <label className="field span-2">
+            <span className="field-label">Remarks <span className="muted small">(only admins see this)</span></span>
+            <textarea className="input remarks-input" rows={3} value={f.remarks} onChange={set('remarks')} placeholder="e.g. Customer asked to deliver after 5 PM. Balance to be paid on arrival." />
           </label>
         </div>
         <a className="wa-link" href={`https://wa.me/${waNumber}?text=${waText}`} target="_blank" rel="noreferrer">

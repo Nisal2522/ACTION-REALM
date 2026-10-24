@@ -859,3 +859,23 @@
 .adm-brand .brand-logo-lockup .bl-mark, .adm-brand .brand-logo-lockup .bl-word { display: inline-flex; flex-direction: row; }
 .adm-brand .brand-logo-lockup .bl-text { display: flex; flex-direction: column; }
 .adm-brand .brand-logo-lockup .bl-slogan { display: block; }
+
+/* Information page topics */
+.topic-list { display: flex; flex-direction: column; gap: 12px; }
+.topic-card { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--adm-border); border-radius: var(--adm-radius); background: var(--adm-bg, transparent); }
+.topic-card:focus-within { border-color: var(--adm-accent); }
+.topic-card-head { display: flex; align-items: center; gap: 10px; }
+.topic-card-head .input { flex: 1; min-width: 0; font-weight: 600; }
+.topic-num { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 8px; font-size: 13px; font-weight: 800; color: var(--adm-accent); background: color-mix(in srgb, var(--adm-accent) 10%, transparent); }
+.topic-card textarea { resize: vertical; line-height: 1.6; }
+.topic-insert { align-self: flex-start; font-size: 12px; text-decoration: none; }
+.topic-insert:hover { color: var(--adm-accent); }
+.topic-tips { margin: 14px 0 0; }
+.topic-tips code { font-size: 12px; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--adm-muted) 15%, transparent); }
+
+.list-thumb.wide { width: 96px; height: 44px; object-fit: cover; border-radius: 6px; }
+
+/* Order remarks */
+.remarks-input { resize: vertical; min-height: 76px; line-height: 1.5; }
+.order-remark { max-width: 220px; margin-top: 4px; padding: 2px 8px; border-radius: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #b45309; background: rgba(245, 158, 11, .12); border-left: 2px solid #f59e0b; }
+:root[data-theme='dark'] .order-remark, .admin-dark .order-remark { color: #fbbf24; }

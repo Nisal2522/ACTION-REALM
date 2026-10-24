@@ -1,10 +1,52 @@
 // Starting website content. Everything here is editable in Admin → Homepage / Pages;
 // these values are only used the first time (or after "Reset").
 import { DEFAULT_SETTINGS as S, formatPrice } from '../config/site';
-import { registerSeed, useCollection } from '../services/db';
+import { db, registerSeed, useCollection } from '../services/db';
 
 const unsplash = (id, w = 1600) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=75`;
 const withIds = (prefix, list) => list.map((item, i) => ({ id: `${prefix}${i + 1}`, ...item }));
+
+const TERMS_INTRO = `These terms apply to every order placed with ${S.name} through this website, WhatsApp or our stores. By placing an order you agree to them, so please read them before you buy.`;
+const TERMS_SECTIONS = withIds('t', [
+  {
+    title: 'Prices and payment',
+    body: `All prices are in Sri Lankan Rupees (LKR) and include all taxes.\n\nWe accept:\n- Card payments through PayHere\n- Bank transfer\n- Cash on delivery\n- 0% installment plans on orders above ${formatPrice(S.installmentThreshold)}\n\nCard payments are processed securely by PayHere. We never see or store your card number.`,
+  },
+  {
+    title: 'Orders and confirmation',
+    body: 'Your order is confirmed once you receive an order number by SMS, WhatsApp or email.\n\nIf an item is out of stock or shown at a wrong price because of an error, we will contact you before dispatch. You can then choose a replacement or a full refund.',
+  },
+  {
+    title: 'Pre-orders',
+    body: 'A pre-order reserves a figure before it is released. You pay a deposit when you order, and the balance is collected before dispatch.\n\n- Release dates are set by manufacturers and may change.\n- We will keep you updated if a date moves.\n- Your deposit is refundable if the manufacturer cancels the product or delays it by more than 6 months.',
+  },
+  {
+    title: 'Product images and descriptions',
+    body: 'Product images are for illustration. Final products may vary slightly from the prototypes shown by manufacturers, including paint and packaging.',
+  },
+  {
+    title: 'Delivery',
+    body: 'We deliver to all 25 districts in Sri Lanka. Delivery times are explained in our [Shipping Policy](/pages/shipping).\n\nPlease check your parcel when it arrives and tell us within 48 hours if anything is wrong.',
+  },
+  {
+    title: 'Returns and refunds',
+    body: 'Damaged or incorrect items are replaced or refunded when reported within 48 hours with an unboxing video. Full details are in our [Returns & Refunds](/pages/returns) policy.',
+  },
+  {
+    title: S.coinsName,
+    body: `You earn ${S.coinsName} on eligible orders.\n\n- Coins have no cash value and cannot be exchanged for money.\n- Coins expire 12 months after they are earned.\n- Coins earned on an order that is returned or refunded may be cancelled.`,
+  },
+  {
+    title: 'Changes to these terms',
+    body: 'We may update these terms from time to time. The version shown on this page on the day you place your order is the one that applies.',
+  },
+]);
+const DEFAULT_TERMS = {
+  image: unsplash('1762786613960-96fc8a8d8d6b', 1920),
+  intro: TERMS_INTRO,
+  sections: TERMS_SECTIONS,
+  body: [TERMS_INTRO, ...TERMS_SECTIONS.map((s) => `${s.title}\n${s.body}`)].join('\n\n'),
+};
 
 registerSeed('heroSlides', () => withIds('hs', [
   {
@@ -134,18 +176,40 @@ registerSeed('pages', () => [
       'We do not sell your personal data. You can ask us to delete your account and data at any time.',
     ].join('\n\n'),
   },
-  {
-    id: 'terms', slug: 'terms', title: 'Terms & Conditions', showInFooter: true,
-    body: [
-      'Prices are in Sri Lankan Rupees (LKR) and include all taxes.',
-      'Product images are for illustration. Final products may vary slightly from prototypes shown by manufacturers.',
-      'Pre-order release dates are set by manufacturers and may change.',
-      `${S.coinsName} have no cash value and expire 12 months after they are earned.`,
-    ].join('\n\n'),
-  },
+  { id: 'terms', slug: 'terms', title: 'Terms & Conditions', showInFooter: true, ...DEFAULT_TERMS },
 ]);
 
-export const CONTENT_COLLECTIONS = ['heroSlides', 'brandStrip', 'characters', 'perks', 'testimonials', 'faqs', 'pages'];
+// ── Information pages with sub-topics ───────────────────────────────────────
+// A page has an optional `intro` and a list of `sections` ({ id, title, body }).
+// `body` on the page is kept as a plain-text copy for previews and read time.
+export const pageBody = (intro, sections) =>
+  [intro, ...sections.map((s) => [s.title, s.body].filter(Boolean).join('\n'))].filter((x) => x && x.trim()).join('\n\n');
+
+// Older pages only have `body`: each paragraph becomes a topic without a heading.
+export function pageSections(page) {
+  if (Array.isArray(page?.sections)) return { intro: page.intro || '', sections: page.sections };
+  const paragraphs = (page?.body || '').split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+  return { intro: '', sections: paragraphs.map((body, i) => ({ id: `p${i + 1}`, title: '', body })) };
+}
+
+const OLD_TERMS_BODY = [
+  'Prices are in Sri Lankan Rupees (LKR) and include all taxes.',
+  'Product images are for illustration. Final products may vary slightly from prototypes shown by manufacturers.',
+  'Pre-order release dates are set by manufacturers and may change.',
+  `${S.coinsName} have no cash value and expire 12 months after they are earned.`,
+].join('\n\n');
+
+// Give the untouched starter Terms page its new topics (admin edits are left alone).
+export function upgradeTermsPage() {
+  const terms = db.all('pages').find((p) => p.id === 'terms');
+  if (terms && !terms.sections && (terms.body || '').trim() === OLD_TERMS_BODY) db.update('pages', 'terms', DEFAULT_TERMS);
+  else if (terms && !('image' in terms)) db.update('pages', 'terms', { image: DEFAULT_TERMS.image });
+}
+
+// Banner photo and text for collection pages (brand, category, franchise). Empty means automatic.
+registerSeed('collectionBanners', () => []);
+
+export const CONTENT_COLLECTIONS = ['heroSlides', 'brandStrip', 'characters', 'perks', 'testimonials', 'faqs', 'pages', 'collectionBanners'];
 
 // Live content for the storefront.
 export const useContent = (name) => useCollection(name);

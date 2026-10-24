@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { SITE, formatPrice } from '../config/site';
-import { useContent } from '../data/content';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { SITE, formatPrice, slugify } from '../config/site';
+import { pageSections, useContent } from '../data/content';
 import { sendMessage } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { CheckIcon, FileIcon, MailIcon, PhoneIcon, PinIcon, WhatsAppIcon } from '../components/Icons';
@@ -9,42 +9,112 @@ import PageHero from '../components/PageHero';
 import useTitle from '../hooks/useTitle';
 import NotFound from './NotFound';
 
+// Turns plain text into paragraphs and bullet lists. Lines starting with "- "
+// become bullets, and [label](/link) becomes a link.
+function RichText({ text }) {
+  const inline = (line) => line.split(/(\[[^\]]+\]\([^)\s]+\))/g).map((part, i) => {
+    const m = part.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
+    if (!m) return part;
+    return /^https?:/.test(m[2])
+      ? <a key={i} href={m[2]} target="_blank" rel="noreferrer">{m[1]}</a>
+      : <Link key={i} to={m[2]}>{m[1]}</Link>;
+  });
+  return text.split(/\n\s*\n/).map((block, i) => {
+    const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+    const bullets = lines.filter((l) => /^[-•*]\s+/.test(l));
+    if (!bullets.length) return <p key={i}>{inline(lines.join(' '))}</p>;
+    const lead = lines.filter((l) => !/^[-•*]\s+/.test(l));
+    return (
+      <div key={i}>
+        {lead.length > 0 && <p>{inline(lead.join(' '))}</p>}
+        <ul>{bullets.map((l, j) => <li key={j}>{inline(l.replace(/^[-•*]\s+/, ''))}</li>)}</ul>
+      </div>
+    );
+  });
+}
+
+const topicId = (s, i) => `topic-${slugify(s.title) || i + 1}`;
+
 export function InfoPage() {
   const { slug } = useParams();
+  const location = useLocation();
   const page = useContent('pages').find((p) => p.slug === slug);
+  const { intro, sections } = pageSections(page);
+  const topics = sections.filter((s) => s.title?.trim());
+  const [open, setOpen] = useState(() => new Set());
   useTitle(page?.title);
+
+  // Open the first topic, or the one named in the address (#topic-delivery).
+  const pageKey = page?.id;
+  useEffect(() => {
+    const fromHash = sections.findIndex((s, i) => `#${topicId(s, i)}` === location.hash);
+    const first = sections.findIndex((s) => s.title?.trim());
+    const pick = fromHash >= 0 ? fromHash : first;
+    setOpen(new Set(pick >= 0 ? [sections[pick].id] : []));
+    if (fromHash >= 0) setTimeout(() => document.getElementById(topicId(sections[fromHash], fromHash))?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  }, [pageKey, location.hash]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!page) return <NotFound />;
-  const sections = page.body.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
-  const words = page.body.split(/\s+/).length;
+  const words = (page.body || '').split(/\s+/).length;
   const updated = page.updatedAt || page.createdAt;
+  const allOpen = topics.length > 0 && topics.every((t) => open.has(t.id));
+
+  const toggle = (id) => setOpen((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
 
   return (
     <div className="info-page">
-      <PageHero label="Policies" title={page.title} icon={FileIcon} compact>
+      <PageHero label="Policies" title={page.title} icon={FileIcon} image={page.image} compact>
         <div className="page-hero-meta">
           {updated && <span>Last updated {new Date(updated).toLocaleDateString('en-LK', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
+          {topics.length > 0 && <span>{topics.length} topics</span>}
           <span>{Math.max(1, Math.round(words / 200))} min read</span>
         </div>
       </PageHero>
 
-      <div className="container policy-layout">
-        <aside className="policy-toc" aria-label="On this page">
-          <span className="policy-toc-title">On this page</span>
-          {sections.map((s, i) => (
-            <a key={i} href={`#section-${i + 1}`}>
-              <span>{String(i + 1).padStart(2, '0')}</span>
-              {s.split(/[.!?]/)[0].slice(0, 48)}{s.split(/[.!?]/)[0].length > 48 ? '…' : ''}
-            </a>
-          ))}
-        </aside>
-
+      <div className="container policy-layout single">
         <article className="policy-body">
-          {sections.map((s, i) => (
-            <section key={i} id={`section-${i + 1}`} className="policy-section">
-              <span className="policy-num">{String(i + 1).padStart(2, '0')}</span>
-              <p>{s}</p>
-            </section>
-          ))}
+          {intro.trim() && <div className="policy-intro"><RichText text={intro} /></div>}
+
+          {topics.length > 1 && (
+            <div className="terms-toolbar">
+              <span className="muted small">{topics.length} topics</span>
+              <button type="button" className="link-btn" onClick={() => setOpen(allOpen ? new Set() : new Set(topics.map((t) => t.id)))}>
+                {allOpen ? 'Collapse all' : 'Expand all'}
+              </button>
+            </div>
+          )}
+
+          {sections.map((s, i) => {
+            const num = <span className="policy-num">{String(i + 1).padStart(2, '0')}</span>;
+            if (!s.title?.trim()) {
+              return (
+                <section key={s.id} id={topicId(s, i)} className="policy-section">
+                  {num}
+                  <div className="rich-text"><RichText text={s.body} /></div>
+                </section>
+              );
+            }
+            const isOpen = open.has(s.id);
+            return (
+              <section key={s.id} id={topicId(s, i)} className={`terms-item ${isOpen ? 'open' : ''}`}>
+                <button type="button" className="terms-head" onClick={() => toggle(s.id)} aria-expanded={isOpen} aria-controls={`${topicId(s, i)}-body`}>
+                  {num}
+                  <span className="terms-title">{s.title}</span>
+                  <span className="terms-icon" aria-hidden="true" />
+                </button>
+                <div className="terms-panel" id={`${topicId(s, i)}-body`} role="region" aria-label={s.title}>
+                  <div className="terms-panel-inner">
+                    <div className="rich-text"><RichText text={s.body} /></div>
+                  </div>
+                </div>
+              </section>
+            );
+          })}
 
           <div className="policy-help">
             <div>

@@ -1,5 +1,5 @@
 import './data/seeds'; // register demo-backend starting data before anything reads it
-import './data/content';
+import { upgradeTermsPage } from './data/content';
 import { loadSettings } from './services/settings';
 import { ensureSampleData } from './data/sampleData';
 import { cleanSavedDashes } from './services/cleanup';
@@ -16,6 +16,7 @@ import './admin/admin.css'; // last, so admin styles override shared ones
 
 cleanSavedDashes();
 loadSettings();
+upgradeTermsPage();
 ensureSampleData(); // demo orders, customers and inbox items (first run only)
 initAnalytics();
 

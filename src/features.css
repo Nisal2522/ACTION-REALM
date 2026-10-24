@@ -1441,3 +1441,105 @@ body.auth-lock { overflow: hidden; }
   .main-nav .shop-mega a { padding: 8px 16px; white-space: normal; }
   .main-nav .shop-mega .shop-mega-all { justify-content: flex-start; padding: 12px 16px 4px; }
 }
+
+/* ── Information pages: intro, topic accordion, rich text ── */
+.policy-intro { padding: 22px 24px; border-radius: 16px; border-left: 4px solid var(--accent); background: var(--bg-2); }
+.policy-intro p { margin: 0; font-size: 16px; line-height: 1.75; }
+.policy-intro p + p { margin-top: 12px; }
+.terms-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 4px 4px 0; }
+.policy-toc a.on { color: var(--text); background: var(--bg-3); }
+
+.terms-item { border-radius: 16px; border: 1px solid var(--line); background: var(--bg-2); scroll-margin-top: 140px; transition: border-color .2s, box-shadow .2s; }
+.terms-item:hover { border-color: var(--line-strong); }
+.terms-item.open { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: 0 10px 30px rgba(0, 0, 0, .18); }
+.terms-head { display: flex; align-items: center; gap: 16px; width: 100%; padding: 16px 20px 16px 16px; text-align: left; color: var(--text); border-radius: 16px; }
+.terms-head:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.terms-title { flex: 1; min-width: 0; font-size: 16.5px; font-weight: 700; line-height: 1.35; }
+.terms-item.open .terms-title, .terms-head:hover .terms-title { color: var(--accent-text); }
+.terms-icon { position: relative; flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); transition: background .2s, border-color .2s, transform .3s; }
+.terms-icon::before, .terms-icon::after { content: ''; position: absolute; top: 50%; left: 50%; width: 12px; height: 2px; margin: -1px 0 0 -6px; border-radius: 2px; background: var(--accent-text); transition: transform .3s, background .2s; }
+.terms-icon::after { transform: rotate(90deg); }
+.terms-item.open .terms-icon { background: var(--accent); border-color: var(--accent); transform: rotate(180deg); }
+.terms-item.open .terms-icon::before, .terms-item.open .terms-icon::after { background: #fff; }
+.terms-item.open .terms-icon::after { transform: rotate(0deg); }
+.terms-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+.terms-item.open .terms-panel { grid-template-rows: 1fr; }
+.terms-panel-inner { overflow: hidden; }
+.terms-panel .rich-text { padding: 0 24px 22px 76px; }
+
+.rich-text { color: var(--muted); font-size: 15.5px; line-height: 1.8; }
+.rich-text p { margin: 0; color: inherit; }
+.rich-text > * + * { margin-top: 12px; }
+.rich-text ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.rich-text li { position: relative; padding-left: 22px; }
+.rich-text li::before { content: ''; position: absolute; left: 4px; top: .72em; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-text); }
+.rich-text a { color: var(--accent-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.policy-section .rich-text { color: var(--text); }
+
+@media (max-width: 560px) {
+  .terms-head { gap: 12px; padding: 14px; }
+  .terms-head .policy-num { width: 36px; height: 36px; font-size: 18px; border-radius: 10px; }
+  .terms-title { font-size: 15px; }
+  .terms-panel .rich-text { padding: 0 16px 18px; font-size: 15px; }
+  .policy-intro { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .terms-panel, .terms-icon, .terms-icon::before, .terms-icon::after { transition: none; } }
+
+/* Information pages: one centred column, optional photo banner */
+.policy-layout.single { grid-template-columns: minmax(0, 860px); }
+.page-hero.has-image { background: #0b0b10; isolation: isolate; }
+.page-hero-photo { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); animation: heroPhotoIn 1.2s ease-out both; }
+.page-hero.has-image::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(600px 300px at 15% 0%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    linear-gradient(180deg, rgba(8, 8, 12, .55) 0%, rgba(8, 8, 12, .72) 55%, rgba(8, 8, 12, .92) 100%); }
+.page-hero.has-image::after { z-index: 0; }
+.page-hero.has-image h1 { text-shadow: 0 4px 30px rgba(0, 0, 0, .55); }
+@keyframes heroPhotoIn { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .page-hero-photo { animation: none; } }
+
+/* ── Collection page banner ── */
+.cbanner {
+  position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center;
+  min-height: clamp(260px, 28vw, 380px); margin: 6px 0 30px; border-radius: 24px; color: #fff;
+  background: #0a0a0f; box-shadow: 0 24px 60px -24px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(255, 255, 255, .07);
+}
+.cbanner-photo { position: absolute; inset: 0; z-index: -3; width: 100%; height: 100%; object-fit: cover; object-position: 70% 40%; animation: cbannerIn 1.2s cubic-bezier(.2, .7, .2, 1) both, cbannerDrift 22s ease-in-out 1.2s infinite alternate; }
+/* Dark fade for the text side, a red glow and a fine dot texture */
+.cbanner::before { content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(420px 320px at 0% 100%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%),
+    linear-gradient(100deg, rgba(7, 7, 11, .96) 0%, rgba(7, 7, 11, .85) 32%, rgba(7, 7, 11, .35) 62%, rgba(7, 7, 11, .05) 100%),
+    linear-gradient(0deg, rgba(7, 7, 11, .55), transparent 45%); }
+.cbanner::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
+  background-image: radial-gradient(rgba(255, 255, 255, .09) 1px, transparent 1px); background-size: 18px 18px;
+  mask-image: linear-gradient(100deg, #000 0%, transparent 55%); -webkit-mask-image: linear-gradient(100deg, #000 0%, transparent 55%); }
+/* Huge outlined title in the background */
+.cbanner-mark { position: absolute; z-index: -1; right: -2%; bottom: -12%; max-width: 110%; font-family: var(--display); font-size: clamp(110px, 17vw, 260px); line-height: .8; letter-spacing: 2px; white-space: nowrap; text-transform: uppercase; color: transparent; -webkit-text-stroke: 1.5px rgba(255, 255, 255, .13); pointer-events: none; user-select: none; }
+
+.cbanner-body { position: relative; max-width: 640px; padding: clamp(28px, 4vw, 56px); animation: cbannerUp .8s .15s cubic-bezier(.2, .7, .2, 1) both; }
+.cbanner-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.cbanner-eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 12px var(--accent-text); }
+.cbanner-title { display: flex; align-items: center; gap: 18px; margin: 18px 0 0; }
+.cbanner h1 { margin: 0; font-size: clamp(46px, 6.4vw, 92px); line-height: .9; letter-spacing: 1.5px; color: #fff; text-shadow: 0 6px 30px rgba(0, 0, 0, .45); overflow-wrap: anywhere; }
+.cbanner-logo { display: grid; place-items: center; flex: none; width: clamp(60px, 6.5vw, 84px); height: clamp(60px, 6.5vw, 84px); padding: 10px; border-radius: 18px; background: #fff; box-shadow: 0 12px 30px rgba(0, 0, 0, .4); }
+.cbanner-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.cbanner-rule { display: block; width: 72px; height: 4px; margin: 18px 0 16px; border-radius: 4px; background: linear-gradient(90deg, var(--accent-text), transparent); box-shadow: 0 0 14px var(--accent-text); }
+.cbanner p { margin: 0; max-width: 500px; font-size: clamp(15px, 1.2vw, 17px); line-height: 1.65; color: rgba(255, 255, 255, .78); }
+.cbanner.is-sale .cbanner-eyebrow { background: var(--accent); border-color: transparent; }
+
+@keyframes cbannerIn { from { opacity: 0; transform: scale(1.12); } to { opacity: 1; transform: scale(1.04); } }
+@keyframes cbannerDrift { from { transform: scale(1.04) translateX(0); } to { transform: scale(1.1) translateX(-1.5%); } }
+@keyframes cbannerUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 760px) {
+  .cbanner { align-items: flex-end; min-height: 300px; border-radius: 18px; margin-bottom: 22px; }
+  .cbanner::before { background:
+    radial-gradient(320px 240px at 0% 100%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    linear-gradient(0deg, rgba(7, 7, 11, .97) 0%, rgba(7, 7, 11, .8) 45%, rgba(7, 7, 11, .2) 100%); }
+  .cbanner-photo { object-position: center 30%; }
+  .cbanner-mark { top: 6%; bottom: auto; font-size: 120px; }
+  .cbanner-title { gap: 12px; }
+  .cbanner-rule { margin: 14px 0 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .cbanner-photo, .cbanner-body { animation: none; } }

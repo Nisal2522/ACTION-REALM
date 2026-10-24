@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HOME_SECTION_LABELS, slugify } from '../config/site';
 import { db, useCollection } from '../services/db';
-import { ChevronIcon, ExternalIcon, FileIcon, HomeIcon, LockIcon, MailIcon, TrashIcon, UsersIcon } from '../components/Icons';
+import { ChevronIcon, ExternalIcon, FileIcon, GridIcon, HomeIcon, LockIcon, MailIcon, PlusIcon, TrashIcon, UsersIcon } from '../components/Icons';
+import { collectionOptions } from '../data/collections';
+import ListEditor from './ListEditor';
+import { pageBody, pageSections } from '../data/content';
 import { HomepageAdmin } from './ContentAdmin';
-import { ObjectList, StringList } from './fields';
+import { ImageInput, ObjectList, StringList } from './fields';
 import { SaveBar, Section, useDraft } from './draft';
 
 const BUILT_IN = [
@@ -12,6 +15,7 @@ const BUILT_IN = [
   { id: 'about', title: 'About Us', url: '/about', Icon: UsersIcon, desc: 'Hero, story, photos, values and closing banner' },
   { id: 'contact', title: 'Contact Us', url: '/contact', Icon: MailIcon, desc: 'Heading, text, message topics and map' },
   { id: 'login', title: 'Login', url: '/login', Icon: LockIcon, desc: 'Titles, side photo and demo note' },
+  { id: 'collections', title: 'Collection banners', url: '/collections/all', Icon: GridIcon, desc: 'Banner photo and text on brand, category and franchise pages' },
 ];
 
 export default function PagesCMS() {
@@ -34,6 +38,7 @@ export default function PagesCMS() {
         {open.kind === 'about' && <AboutEditor />}
         {open.kind === 'contact' && <ContactEditor />}
         {open.kind === 'login' && <LoginEditor />}
+        {open.kind === 'collections' && <CollectionBanners />}
         {open.kind === 'policy' && <PolicyEditor page={policy} onDone={() => setOpen(null)} />}
       </div>
     );
@@ -57,7 +62,7 @@ export default function PagesCMS() {
         {policies.map((p) => (
           <button key={p.id} className="cms-page-card" onClick={() => setOpen({ kind: 'policy', id: p.id })}>
             <span className="cms-page-icon"><FileIcon width={20} height={20} /></span>
-            <span className="cms-page-text"><strong>{p.title}</strong><span className="muted small">{(p.body || '').slice(0, 70)}…</span></span>
+            <span className="cms-page-text"><strong>{p.title}</strong><span className="muted small">{p.sections?.some((t) => t.title) ? `${p.sections.length} topics · ${p.sections.filter((t) => t.title).slice(0, 3).map((t) => t.title).join(', ')}` : `${(p.body || '').slice(0, 70)}…`}</span></span>
             <ChevronIcon dir="right" width={16} height={16} />
           </button>
         ))}
@@ -192,22 +197,83 @@ function LoginEditor() {
   );
 }
 
+// ── Collection banners (brand / category / franchise pages) ─────────────────
+function CollectionBanners() {
+  const options = collectionOptions();
+  const label = (slug) => options.find((o) => o.value === slug)?.label || slug;
+  return (
+    <ListEditor
+      collection="collectionBanners"
+      itemName="banner"
+      sortable={false}
+      intro="Every collection page already has a starter banner photo. Add a banner here to use your own photo or text for a brand, category, franchise or collection."
+      newItem={{ collection: options[0]?.value || 'all', image: '', text: '' }}
+      validate={(b, all) => {
+        if (all.some((x) => x.collection === b.collection && x.id !== b.id)) return 'This page already has a banner. Edit that one instead.';
+        if (!b.image && !b.text?.trim()) return 'Add a photo or some text.';
+        return null;
+      }}
+      fields={[
+        { key: 'collection', label: 'Page', type: 'select', options, span: 2 },
+        { key: 'image', label: 'Banner photo (wide, at least 1600px)', type: 'image', max: 1920, shape: 'wide' },
+        { key: 'text', label: 'Text under the title (optional)', type: 'textarea', rows: 3, placeholder: 'Leave empty for the automatic line.' },
+      ]}
+      columns={[
+        { label: 'Photo', render: (b) => (b.image ? <img src={b.image} alt="" className="list-thumb wide" /> : <span className="muted small">Automatic</span>) },
+        { label: 'Page', render: (b) => <><strong>{label(b.collection)}</strong><div className="muted small"><Link to={`/collections/${b.collection}`} target="_blank" className="link">/collections/{b.collection}</Link></div></> },
+        { label: 'Text', render: (b) => <span className="small clamp-2">{b.text || 'Automatic'}</span> },
+      ]}
+    />
+  );
+}
+
 // ── Information pages (shipping, returns, privacy, terms, custom) ───────────
+const topicKey = () => Math.random().toString(36).slice(2, 8);
+
 function PolicyEditor({ page, onDone }) {
-  const [f, setF] = useState({ title: page?.title || '', slug: page?.slug || '', body: page?.body || '' });
+  const start = pageSections(page);
+  const [f, setF] = useState({ title: page?.title || '', slug: page?.slug || '', intro: start.intro, image: page?.image || '' });
+  const [topics, setTopics] = useState(() => (start.sections.length ? start.sections : [{ id: topicKey(), title: '', body: '' }]));
+  const [focus, setFocus] = useState(null);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const all = useCollection('pages');
-  const set = (k) => (e) => { setF({ ...f, [k]: e.target.value }); setSaved(false); };
+  const touch = () => setSaved(false);
+  const set = (k) => (e) => { setF({ ...f, [k]: e.target.value }); touch(); };
+  const setTopic = (i, patch) => { setTopics(topics.map((t, j) => (j === i ? { ...t, ...patch } : t))); touch(); };
+  const moveTopic = (i, d) => {
+    const next = [...topics];
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    setTopics(next);
+    touch();
+  };
+  const addTopic = (at = topics.length) => {
+    const t = { id: topicKey(), title: '', body: '' };
+    setTopics([...topics.slice(0, at), t, ...topics.slice(at)]);
+    setFocus(t.id);
+    touch();
+  };
+  const removeTopic = (i) => {
+    const t = topics[i];
+    if ((t.title || t.body) && !window.confirm(`Delete the topic "${t.title || 'Untitled'}"?`)) return;
+    setTopics(topics.filter((_, j) => j !== i));
+    touch();
+  };
 
   const save = () => {
     const slug = slugify(f.slug || f.title);
+    const clean = topics.map((t) => ({ id: t.id, title: t.title.trim(), body: t.body.trim() })).filter((t) => t.title || t.body);
     if (!f.title.trim()) return setError('Enter a page title.');
     if (!slug || slug === 'about') return setError('Choose a different page address.');
     if (all.some((p) => p.slug === slug && p.id !== page?.id)) return setError('Another page already uses this address.');
+    const empty = clean.findIndex((t) => !t.body);
+    if (empty >= 0) return setError(`Topic ${empty + 1} (${clean[empty].title}) needs some content.`);
+    if (!clean.length && !f.intro.trim()) return setError('Add at least one topic.');
     setError('');
-    if (page) db.update('pages', page.id, { title: f.title.trim(), slug, body: f.body });
-    else db.insert('pages', { title: f.title.trim(), slug, body: f.body, showInFooter: false });
+    const data = { title: f.title.trim(), slug, image: f.image || '', intro: f.intro.trim(), sections: clean, body: pageBody(f.intro.trim(), clean) };
+    if (page) db.update('pages', page.id, data);
+    else db.insert('pages', { ...data, showInFooter: false });
+    setTopics(clean.length ? clean : topics);
     setSaved(true);
     if (!page) onDone();
   };
@@ -219,17 +285,70 @@ function PolicyEditor({ page, onDone }) {
 
   return (
     <>
-      <Section title="Page content" desc="Separate paragraphs with a blank line.">
+      <Section title="Page details">
         <div className="form-grid">
           <label className="field"><span className="field-label">Title</span><input className="input" value={f.title} onChange={set('title')} /></label>
           <label className="field"><span className="field-label">Page address</span><input className="input" value={f.slug} onChange={set('slug')} placeholder="auto from title" /><span className="muted small">Opens at /pages/{slugify(f.slug || f.title) || '…'}</span></label>
-          <label className="field span-2"><span className="field-label">Content</span><textarea className="input" rows={14} value={f.body} onChange={set('body')} /></label>
+          <div className="field span-2">
+            <span className="field-label">Banner photo (optional, wide, at least 1600px)</span>
+            <ImageInput value={f.image} onChange={(image) => { setF({ ...f, image }); touch(); }} max={1920} shape="wide" />
+            <span className="muted small">Shown behind the page title, darkened so the text stays readable. Leave empty for the plain red banner.</span>
+          </div>
+          <label className="field span-2">
+            <span className="field-label">Introduction (optional)</span>
+            <textarea className="input" rows={3} value={f.intro} onChange={set('intro')} placeholder="A short note shown above the topics." />
+          </label>
         </div>
       </Section>
+
+      <Section
+        title={`Topics (${topics.length})`}
+        desc="Each topic opens and closes on the page, like the FAQ. Leave the heading empty to show a topic as a plain paragraph."
+        aside={<button type="button" className="btn btn-sm" onClick={() => addTopic()}><PlusIcon width={14} height={14} /> Add topic</button>}
+      >
+        <div className="topic-list">
+          {topics.map((t, i) => (
+            <div key={t.id} className="topic-card">
+              <div className="topic-card-head">
+                <span className="topic-num">{String(i + 1).padStart(2, '0')}</span>
+                <input
+                  className="input"
+                  value={t.title}
+                  onChange={(e) => setTopic(i, { title: e.target.value })}
+                  placeholder="Topic heading, e.g. Prices and payment"
+                  aria-label={`Topic ${i + 1} heading`}
+                  autoFocus={focus === t.id}
+                />
+                <span className="order-btns">
+                  <button type="button" className="icon-btn sm" disabled={i === 0} onClick={() => moveTopic(i, -1)} aria-label="Move up">↑</button>
+                  <button type="button" className="icon-btn sm" disabled={i === topics.length - 1} onClick={() => moveTopic(i, 1)} aria-label="Move down">↓</button>
+                </span>
+                <button type="button" className="icon-btn sm danger" onClick={() => removeTopic(i)} aria-label={`Delete topic ${i + 1}`}><TrashIcon width={15} height={15} /></button>
+              </div>
+              <textarea
+                className="input"
+                rows={Math.min(12, Math.max(4, t.body.split('\n').length + 1))}
+                value={t.body}
+                onChange={(e) => setTopic(i, { body: e.target.value })}
+                placeholder="What customers should know about this topic."
+                aria-label={`Topic ${i + 1} content`}
+              />
+              <button type="button" className="link-btn topic-insert" onClick={() => addTopic(i + 1)}>+ Add topic below</button>
+            </div>
+          ))}
+          {!topics.length && <p className="muted small">No topics yet. Click “Add topic” to start.</p>}
+        </div>
+        <p className="muted small topic-tips">
+          Tips: leave a blank line between paragraphs. Start a line with <code>- </code> for a bullet point.
+          Write <code>[Shipping Policy](/pages/shipping)</code> to add a link.
+        </p>
+      </Section>
+
       <div className="save-bar">
         {error && <p className="error">{error}</p>}
         {saved && <p className="notice notice-ok no-margin">Saved.</p>}
         {page && <button type="button" className="btn btn-outline danger-btn sp-left" onClick={remove}><TrashIcon width={16} height={16} /> Delete page</button>}
+        {page && <Link to={`/pages/${slugify(f.slug || f.title)}`} target="_blank" className="btn btn-outline"><ExternalIcon width={15} height={15} /> View page</Link>}
         <button type="button" className="btn" onClick={save}>{page ? 'Save changes' : 'Create page'}</button>
       </div>
     </>
