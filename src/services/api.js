@@ -123,8 +123,16 @@ function saveAddress(list, address) {
   return [address, ...list.filter((a) => key(a) !== key(address))].slice(0, 3);
 }
 
+// Moving several steps ahead at once also stamps the steps in between, so every step has a date.
 export function setOrderStatus(orderId, status) {
-  return db.update('orders', orderId, (o) => ({ status, history: [...o.history, { status, at: new Date().toISOString() }] }));
+  const at = new Date().toISOString();
+  return db.update('orders', orderId, (o) => {
+    const keys = ORDER_STEPS.map((s) => s.key);
+    const from = keys.indexOf(o.status);
+    const to = keys.indexOf(status);
+    const skipped = from >= 0 && to > from + 1 ? keys.slice(from + 1, to) : [];
+    return { status, history: [...o.history, ...skipped.map((k) => ({ status: k, at })), { status, at }] };
+  });
 }
 
 export function findOrder(number, phone) {

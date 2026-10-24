@@ -9,10 +9,17 @@ const fmtDate = (iso) => new Date(iso).toLocaleString('en-LK', { day: 'numeric',
 export function StatusTimeline({ order }) {
   if (order.status === 'Cancelled') return <p className="notice notice-low">This order was cancelled.</p>;
   const current = ORDER_STEPS.findIndex((s) => s.key === order.status);
+  const history = order.history || [];
+  const dateOf = (key) => [...history].reverse().find((h) => h.status === key)?.at;
+  // A completed step with no date of its own was passed when a later step was set, so use that date.
+  const dates = ORDER_STEPS.map((s, i) => {
+    if (i > current) return null;
+    return dateOf(s.key) || ORDER_STEPS.slice(i + 1, current + 1).map((x) => dateOf(x.key)).find(Boolean) || null;
+  });
   return (
     <ol className="timeline">
       {ORDER_STEPS.map((s, i) => {
-        const at = [...(order.history || [])].reverse().find((h) => h.status === s.key)?.at;
+        const at = dates[i];
         const state = i < current ? 'done' : i === current ? 'done current' : 'todo';
         return (
           <li key={s.key} className={state}>
