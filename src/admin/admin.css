@@ -879,3 +879,17 @@
 .remarks-input { resize: vertical; min-height: 76px; line-height: 1.5; }
 .order-remark { max-width: 220px; margin-top: 4px; padding: 2px 8px; border-radius: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #b45309; background: rgba(245, 158, 11, .12); border-left: 2px solid #f59e0b; }
 :root[data-theme='dark'] .order-remark, .admin-dark .order-remark { color: #fbbf24; }
+
+/* Phones: grids may not grow wider than the screen */
+@media (max-width: 900px) {
+  .adm, .adm.nav-mini, .dash-grid, .kpi-grid, .bk-top { grid-template-columns: minmax(0, 1fr); }
+  .adm > *, .dash-grid > *, .kpi-grid > *, .bk-top > * { min-width: 0; }
+}
+@media (max-width: 560px) {
+  .bk-side { flex-direction: column; }
+  .bk-mini { min-width: 0; }
+}
+@media (max-width: 900px) {
+  /* A later desktop rule made the sidebar sticky, so on phones it left a full empty screen above the page */
+  .adm-side { position: fixed; top: 0; bottom: 0; left: 0; z-index: 40; height: 100vh; height: 100dvh; overflow-y: auto; }
+}

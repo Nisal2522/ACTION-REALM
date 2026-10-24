@@ -1543,3 +1543,35 @@ body.auth-lock { overflow: hidden; }
   .cbanner-rule { margin: 14px 0 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .cbanner-photo, .cbanner-body { animation: none; } }
+
+/* ───────────── Mobile fixes: nothing may push the page wider than the screen ───────────── */
+html, body { overflow-x: clip; }
+.footer-grid > *, .pdp > *, .shop-layout > *, .checkout > * { min-width: 0; }
+.footer-grid p, .footer-grid a { overflow-wrap: anywhere; }
+@media (max-width: 860px) {
+  .pdp, .shop-layout, .checkout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  /* Footer: brand on top, Shop + Help side by side, then Visit Us and Newsletter full width */
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
+  .footer-grid > div:first-child, .footer-grid > div:nth-last-child(-n + 2) { grid-column: 1 / -1; }
+  .newsletter { display: flex; gap: 8px; }
+  .newsletter input { flex: 1; min-width: 0; }
+}
+@media (max-width: 1100px) { .fbt2 { grid-template-columns: minmax(0, 1fr); } .fbt2 > * { min-width: 0; } }
+/* The open mobile menu sits above the bottom bar and the WhatsApp button */
+.site-header.menu-open { z-index: 120; }
+@media (max-width: 860px) {
+  /* iPhones zoom into text boxes smaller than 16px, which shifts the page sideways */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea { font-size: 16px !important; }
+  .main-nav { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 560px) { .cbanner-mark { display: none; } }
+/* Very small phones (320px) */
+.track-form > *, .track-card > * { min-width: 0; }
+@media (max-width: 560px) { .track-form { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 400px) {
+  .shop-toolbar { gap: 8px; }
+  .sort { min-width: 0; gap: 6px; }
+  .sort select, .shop-toolbar select { min-width: 0; width: 100%; max-width: 165px; }
+}

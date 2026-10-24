@@ -26,7 +26,7 @@ export default function Header() {
   }, [location]);
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${menuOpen ? 'menu-open' : ''}`}>
       <div className="header-main container">
         <button className="icon-btn mobile-only" onClick={() => setMenuOpen(true)} aria-label="Open menu">
           <MenuIcon />
